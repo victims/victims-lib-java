@@ -94,25 +94,23 @@ public class VictimsRecord {
 		}
 
 		// Reorganize hashes if available
-		HashRecord sha512 = new HashRecord();
-		HashRecord sha1 = new HashRecord();
 		for (Artifact file : artifact.contents()) {
 			if (file.filetype().equals(".class")) {
 				Fingerprint fingerprint = file.fingerprint();
 				if (fingerprint != null) {
-					if (fingerprint.containsKey(Algorithms.SHA512)) {
-						sha512.put(fingerprint.get(Algorithms.SHA512),
-								file.filename());
-					}
-					if (fingerprint.containsKey(Algorithms.SHA1)) {
-						sha1.put(fingerprint.get(Algorithms.SHA1),
+					for (Algorithms alg : fingerprint.keySet()) {
+						// TODO: This might be a problem later on
+						String key = alg.toString().toLowerCase()
+								.replace("-", "");
+						if (!this.hashes.containsKey(key)) {
+							this.hashes.put(key, new HashRecord());
+						}
+						this.hashes.get(key).put(fingerprint.get(alg),
 								file.filename());
 					}
 				}
 			}
 		}
-		this.hashes.put("sha512", sha512);
-		this.hashes.put("sha1", sha1);
 	}
 
 	public static enum RecordStatus {
