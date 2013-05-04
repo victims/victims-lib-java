@@ -31,6 +31,7 @@ public class VictimsRecord {
 
 	// record information
 	public RecordStatus status;
+	public Integer id;
 	public Date date;
 	public Date submittedon;
 	public String submitter;
