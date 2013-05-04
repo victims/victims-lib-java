@@ -26,6 +26,7 @@ public class Artifact extends HashMap<Key, Object> {
 		PERMITTED_VALUE_TYPES.add(ArrayList.class);
 		PERMITTED_VALUE_TYPES.add(Fingerprint.class);
 		PERMITTED_VALUE_TYPES.add(Metadata.class);
+		PERMITTED_VALUE_TYPES.add(HashMap.class);
 	};
 
 	public Artifact() {
@@ -69,10 +70,10 @@ public class Artifact extends HashMap<Key, Object> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ArrayList<Metadata> metadata() {
+	public HashMap<String, Metadata> metadata() {
 		Object value = get(Key.METADATA);
 		if (value != null) {
-			return (ArrayList<Metadata>) value;
+			return (HashMap<String, Metadata>) value;
 		}
 		return null;
 	}

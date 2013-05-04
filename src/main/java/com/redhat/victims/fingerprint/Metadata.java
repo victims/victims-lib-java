@@ -22,7 +22,7 @@ public class Metadata extends HashMap<String, String> {
 	 * @param is
 	 *            An input stream containing the extracted POM file.
 	 */
-	public static Metadata fromPom(InputStream is) {
+	public static Metadata fromPomProperties(InputStream is) {
 		Metadata metadata = new Metadata();
 		BufferedReader input = new BufferedReader(new InputStreamReader(is));
 		try {
@@ -84,5 +84,4 @@ public class Metadata extends HashMap<String, String> {
 		}
 		return metadata;
 	}
-
 }

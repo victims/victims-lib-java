@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -28,7 +29,7 @@ public class JarFile extends AbstractFile {
 
 	protected ArrayList<Object> contents;
 	protected Fingerprint contentFingerprint;
-	protected ArrayList<Metadata> metadata;
+	protected HashMap<String, Metadata> metadata;
 	protected JarInputStream jis;
 
 	/**
@@ -41,7 +42,7 @@ public class JarFile extends AbstractFile {
 	 */
 	public JarFile(byte[] bytes, String fileName) throws IOException {
 		this.contents = new ArrayList<Object>();
-		this.metadata = new ArrayList<Metadata>();
+		this.metadata = new HashMap<String, Metadata>();
 		this.fileName = fileName;
 		this.jis = new JarInputStream(new ByteArrayInputStream(bytes));
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -50,10 +51,11 @@ public class JarFile extends AbstractFile {
 			bos.write(file.bytes);
 
 			// Handle metadata/special cases
-			if (file.name.toLowerCase().endsWith("pom.properties")) {
-				// handle pom files
+			String lowerCaseFileName = file.name.toLowerCase();
+			if (lowerCaseFileName.endsWith("pom.properties")) {
+				// handle pom properties files
 				InputStream is = new ByteArrayInputStream(file.bytes);
-				metadata.add(Metadata.fromPom(is));
+				metadata.put(file.name, Metadata.fromPomProperties(is));
 			}
 
 			// This is separate as we may or may not want to fingerprint
@@ -69,7 +71,7 @@ public class JarFile extends AbstractFile {
 		// Process the metadata from the manifest if available
 		Manifest mf = jis.getManifest();
 		if (mf != null) {
-			metadata.add(Metadata.fromManifest(mf));
+			metadata.put("MANIFEST.MF", Metadata.fromManifest(mf));
 		}
 
 		// TODO: decide if we want to keep the content-only hash

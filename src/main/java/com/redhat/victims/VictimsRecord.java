@@ -9,6 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LinkedHashTreeMap;
 import com.redhat.victims.fingerprint.Algorithms;
 import com.redhat.victims.fingerprint.Artifact;
 import com.redhat.victims.fingerprint.Fingerprint;
@@ -58,7 +59,7 @@ public class VictimsRecord {
 		// TODO: add pom.properties support?
 		String vendorkey = Attributes.Name.IMPLEMENTATION_VENDOR.toString();
 		String versionkey = Attributes.Name.IMPLEMENTATION_VERSION.toString();
-		String namekey = Attributes.Name.IMPLEMENTATION_VERSION.toString();
+		String namekey = Attributes.Name.IMPLEMENTATION_TITLE.toString();
 		if (this.vendor == null) {
 			this.vendor = md.get(vendorkey);
 		}
@@ -73,17 +74,18 @@ public class VictimsRecord {
 	public VictimsRecord(Artifact artifact) {
 		this.status = RecordStatus.NEW;
 		this.meta = new ArrayList<MetaRecord>();
-		this.hash = artifact.fingerprint().get(Algorithms.SHA512);
 		this.hashes = new HashRecords();
 		this.cves = new ArrayList<String>();
 
 		// Process the metadatas if available
-		ArrayList<Metadata> metadatas = artifact.metadata();
+		HashMap<String, Metadata> metadatas = artifact.metadata();
 		if (metadatas != null) {
-			for (Metadata md : artifact.metadata()) {
+			for (Object key : metadatas.keySet()) {
+				Metadata md = metadatas.get(key);
 				setFromMetadata(md);
 				MetaRecord mr = new MetaRecord();
-				mr.put("properties", md);
+				mr.put(FieldName.META_FILENAME, key);
+				mr.put(FieldName.META_PROPERTIES, md);
 				meta.add(mr);
 			}
 		}
@@ -99,37 +101,82 @@ public class VictimsRecord {
 				Fingerprint fingerprint = file.fingerprint();
 				if (fingerprint != null) {
 					for (Algorithms alg : fingerprint.keySet()) {
-						// TODO: This might be a problem later on
-						String key = alg.toString().toLowerCase()
-								.replace("-", "");
+						String key = normalizeKey(alg);
 						if (!this.hashes.containsKey(key)) {
-							this.hashes.put(key, new HashRecord());
+							Record hashRecord = new Record();
+							hashRecord.put(FieldName.FILE_HASHES,
+									new StringMap());
+							hashRecord.put(FieldName.COMBINED_HASH, artifact
+									.fingerprint().get(alg));
+							this.hashes.put(key, hashRecord);
 						}
-						this.hashes.get(key).put(fingerprint.get(alg),
-								file.filename());
+						((StringMap) this.hashes.get(key).get(
+								FieldName.FILE_HASHES)).put(
+								fingerprint.get(alg), file.filename());
 					}
 				}
 			}
 		}
+
+		// Get the hash for the file
+		this.hash = artifact.fingerprint().get(Algorithms.SHA512);
+	}
+
+	/**
+	 * Handles difference in the keys used for algorithms
+	 * 
+	 * @param alg
+	 * @return
+	 */
+	public static String normalizeKey(Algorithms alg) {
+		if (alg.equals(Algorithms.SHA512)) {
+			return FieldName.SHA512;
+		}
+		return alg.toString().toLowerCase();
 	}
 
 	public static enum RecordStatus {
 		SUBMITTED, RELEASED, NEW
 	};
 
+	public static class FieldName {
+		public static final String FILE_HASHES = "files";
+		public static final String COMBINED_HASH = "combined";
+		public static final String SHA512 = "sha512";
+		public static final String META_PROPERTIES = "properties";
+		public static final String META_FILENAME = "filename";
+	}
+
 	@SuppressWarnings("serial")
 	public static class StringMap extends HashMap<String, String> {
 	}
 
 	@SuppressWarnings("serial")
-	public static class HashRecord extends HashMap<String, Object> {
+	public static class Record extends HashMap<String, Object> {
 	}
 
 	@SuppressWarnings("serial")
-	public static class HashRecords extends HashMap<String, HashRecord> {
+	public static class HashRecords extends HashMap<String, Record> {
 	}
 
 	@SuppressWarnings("serial")
-	public static class MetaRecord extends HashMap<String, Metadata> {
+	public static class MetaRecord extends Record {
+		public static final ArrayList<Class<?>> PERMITTED_VALUE_TYPES = new ArrayList<Class<?>>();
+		static {
+			PERMITTED_VALUE_TYPES.add(Metadata.class);
+			PERMITTED_VALUE_TYPES.add(String.class);
+			PERMITTED_VALUE_TYPES.add(LinkedHashTreeMap.class);
+		}
+
+		@Override
+		public Object put(String key, Object value) {
+			if (!PERMITTED_VALUE_TYPES.contains(value.getClass())) {
+				System.out.println(key.toString());
+				throw new IllegalArgumentException(String.format(
+						"Values of class type <%s> are not permitted in <%s>",
+						value.getClass().getName(), this.getClass().getName()));
+			}
+			return super.put(key, value);
+		}
 	}
 }
