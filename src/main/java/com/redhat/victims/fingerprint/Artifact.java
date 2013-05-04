@@ -35,7 +35,6 @@ public class Artifact extends HashMap<Key, Object> {
 	@Override
 	public Object put(Key key, Object value) throws IllegalArgumentException {
 		if (!PERMITTED_VALUE_TYPES.contains(value.getClass())) {
-			System.out.println(key.toString());
 			throw new IllegalArgumentException(String.format(
 					"Values of class type <%s> are not permitted in <%s>",
 					value.getClass().getName(), this.getClass().getName()));
