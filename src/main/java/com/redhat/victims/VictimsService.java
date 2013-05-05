@@ -86,9 +86,13 @@ public class VictimsService {
 		protected Gson gson;
 
 		public RecordStream(String uri) throws IOException {
+			this(new URL(uri).openStream());
+		}
+
+		public RecordStream(InputStream in) throws IOException {
+			this.in = in;
 			this.gson = new GsonBuilder().setDateFormat(
 					VictimsRecord.DATE_FORMAT).create();
-			this.in = new URL(uri).openStream();
 			this.json = new JsonReader(new InputStreamReader(in, "UTF-8"));
 			this.json.beginArray();
 		}
