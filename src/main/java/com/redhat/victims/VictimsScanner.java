@@ -3,6 +3,7 @@ package com.redhat.victims;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -14,6 +15,21 @@ import com.redhat.victims.fingerprint.Artifact;
 import com.redhat.victims.fingerprint.Processor;
 
 public class VictimsScanner {
+
+	private static void scanArtifact(Artifact artifact, OutputStream os)
+			throws IOException {
+		ArrayList<Artifact> embedded = artifact.embedded();
+		if (embedded != null) {
+			for (Artifact eartifact : artifact.embedded()) {
+				scanArtifact(eartifact, os);
+			}
+		}
+		VictimsRecord vr = new VictimsRecord(artifact);
+		String line = vr.toString();
+		line += "\n";
+		os.write(line.getBytes());
+	}
+
 	/**
 	 * 
 	 * Scans a provided {@link File} producing {@link VictimsRecord}. The string
@@ -28,10 +44,7 @@ public class VictimsScanner {
 		File f = file;
 		String path = f.getAbsolutePath();
 		Artifact artifact = Processor.process(path);
-		VictimsRecord vr = new VictimsRecord(artifact);
-		String line = vr.toString();
-		line += "\n";
-		os.write(line.getBytes());
+		scanArtifact(artifact, os);
 	}
 
 	/**

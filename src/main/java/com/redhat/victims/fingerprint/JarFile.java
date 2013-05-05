@@ -28,6 +28,7 @@ public class JarFile extends AbstractFile {
 	private static final int BUFFER = 2048;
 
 	protected ArrayList<Object> contents;
+	protected ArrayList<Object> embedded;
 	protected Fingerprint contentFingerprint;
 	protected HashMap<String, Metadata> metadata;
 	protected JarInputStream jis;
@@ -42,6 +43,7 @@ public class JarFile extends AbstractFile {
 	 */
 	public JarFile(byte[] bytes, String fileName) throws IOException {
 		this.contents = new ArrayList<Object>();
+		this.embedded = new ArrayList<Object>();
 		this.metadata = new HashMap<String, Metadata>();
 		this.fileName = fileName;
 		this.jis = new JarInputStream(new ByteArrayInputStream(bytes));
@@ -63,7 +65,12 @@ public class JarFile extends AbstractFile {
 			if (RECURSIVE) {
 				Artifact record = Processor.process(file.bytes, file.name);
 				if (record != null) {
-					contents.add(record);
+					if (file.name.endsWith(".jar")) {
+						// this is an embedded archive
+						embedded.add(record);
+					} else {
+						contents.add(record);
+					}
 				}
 			}
 		}
@@ -108,6 +115,7 @@ public class JarFile extends AbstractFile {
 		result.put(Key.CONTENT, contents);
 		result.put(Key.CONTENT_FINGERPRINT, contentFingerprint);
 		result.put(Key.METADATA, metadata);
+		result.put(Key.EMBEDDED, embedded);
 		return result;
 	}
 
