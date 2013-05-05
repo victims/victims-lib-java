@@ -85,10 +85,24 @@ public class VictimsService {
 		protected InputStream in;
 		protected Gson gson;
 
+		/**
+		 * Create a record stream from a given URI.
+		 * 
+		 * @param uri
+		 * @throws IOException
+		 */
 		public RecordStream(String uri) throws IOException {
 			this(new URL(uri).openStream());
 		}
 
+		/**
+		 * Create a record stream from a given input stream. we expect the
+		 * stream to contain a json response of the for [{"fields" : {
+		 * {@link VictimsRecord} String}}]
+		 * 
+		 * @param in
+		 * @throws IOException
+		 */
 		public RecordStream(InputStream in) throws IOException {
 			this.in = in;
 			this.gson = new GsonBuilder().setDateFormat(
