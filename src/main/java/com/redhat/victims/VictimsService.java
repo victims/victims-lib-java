@@ -24,8 +24,59 @@ import com.google.gson.stream.JsonReader;
  * 
  */
 public class VictimsService {
-	public static String VICTIMS_URI = "https://victims-websec.rhcloud.com";
-	public static final String VICTIMS_SERVICE = "/service/v2";
+	protected static final String DEFAULT_URI = "https://victims-websec.rhcloud.com";
+	protected static final String DEFAULT_ENTRY_POINT = "/service/v2";
+	protected String uri;
+	protected String entry_point;
+
+	/**
+	 * Create a VictimsService instance with the default uri and entry point.
+	 */
+	public VictimsService() {
+		this.uri = DEFAULT_URI;
+		this.entry_point = DEFAULT_ENTRY_POINT;
+
+	}
+
+	/**
+	 * Create a VictimsService instance with the specified uri and entry point.
+	 * 
+	 * @param uri
+	 *            The base uri pointint to a victims-web service.
+	 * @param entry_point
+	 *            The entry point to be used for this service.
+	 */
+	public VictimsService(String uri, String entry_point) {
+		this.uri = uri;
+		this.entry_point = entry_point;
+	}
+
+	/**
+	 * Create a VictimsService instance with the specified uri and default entry
+	 * point.
+	 * 
+	 * @param uri
+	 *            The base uri pointint to a victims-web service.
+	 */
+	public VictimsService(String uri) {
+		this(uri, DEFAULT_ENTRY_POINT);
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getURI() {
+		return this.uri;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getEntryPoint() {
+		return this.entry_point;
+	}
 
 	/**
 	 * 
@@ -36,7 +87,7 @@ public class VictimsService {
 	 * @return
 	 * @throws IOException
 	 */
-	public static RecordStream updates(Date since) throws IOException {
+	public RecordStream updates(Date since) throws IOException {
 		return fetch(since, "update");
 	}
 
@@ -49,7 +100,7 @@ public class VictimsService {
 	 * @return
 	 * @throws IOException
 	 */
-	public static RecordStream removed(Date since) throws IOException {
+	public RecordStream removed(Date since) throws IOException {
 		return fetch(since, "remove");
 	}
 
@@ -65,10 +116,10 @@ public class VictimsService {
 	 * @return
 	 * @throws IOException
 	 */
-	protected static RecordStream fetch(Date since, String type)
+	protected RecordStream fetch(Date since, String type)
 			throws IOException {
 		SimpleDateFormat fmt = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
-		String uri = String.format("%s/%s/%s/%s", VICTIMS_URI, VICTIMS_SERVICE,
+		String uri = String.format("%s/%s/%s/%s", this.uri, this.entry_point,
 				type, fmt.format(since));
 		return new RecordStream(uri);
 	}
@@ -151,9 +202,9 @@ public class VictimsService {
 	public static void main(String[] args) throws IOException, ParseException {
 		// DEBUG CODE
 		// jdk 1.7 does not like name errors
-		// System.setProperty("jsse.enableSNIExtension", "false");
+		System.setProperty("jsse.enableSNIExtension", "false");
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		RecordStream rs = VictimsService.updates(sdf.parse("01/01/2010"));
+		RecordStream rs = new VictimsService().updates(sdf.parse("01/01/2010"));
 		while (rs.hasNext()) {
 			System.out.println(rs.getNext());
 		}
