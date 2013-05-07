@@ -25,15 +25,15 @@ public class VictimsScannerTest {
 	private static final String POM_FILE = "testdata/junit-4.11/junit-4.11.pom";
 	private static final String POM_SHA1 = POM_FILE + ".sha1";
 	private static final String POM_JSON = POM_FILE + ".json";
-	
+
 	public void jsonTestStream(String inFile, String jsonFile)
 			throws IOException {
 		OutputStream os = new ByteArrayOutputStream();
 		File test = new File(inFile);
-		String expected = FileUtils.readFileToString(new File(jsonFile));
+		String expected = FileUtils.readFileToString(new File(jsonFile)).trim();
 		try {
 			VictimsScanner.scan(test.getAbsolutePath(), os);
-			String result = os.toString();
+			String result = os.toString().trim();
 			assertEquals("Scanned json string not equal to expected", expected,
 					result);
 		} catch (IOException e) {
@@ -47,7 +47,7 @@ public class VictimsScannerTest {
 			throws IOException {
 		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
 		File test = new File(inFile);
-		String expected = FileUtils.readFileToString(new File(jsonFile));
+		String expected = FileUtils.readFileToString(new File(jsonFile)).trim();
 		int expected_count = 1;
 		try {
 			VictimsScanner.scan(test.getAbsolutePath(), records);
@@ -55,7 +55,7 @@ public class VictimsScannerTest {
 			assertTrue(String.format("Expected %d records, found %d.",
 					expected_count, result_count), result_count == 1);
 			// the output stream write adds a line to split records
-			String result = records.get(0).toString() + "\n";
+			String result = records.get(0).toString();
 			assertEquals("Scanned json string not equal to expected", expected,
 					result);
 		} catch (IOException e) {
@@ -70,7 +70,7 @@ public class VictimsScannerTest {
 		if (useStream) {
 			in = new FileInputStream(test);
 		}
-		String expected = FileUtils.readFileToString(new File(sha1File));
+		String expected = FileUtils.readFileToString(new File(sha1File)).trim();
 		int expected_count = 1;
 		try {
 			ArrayList<VictimsRecord> records = null;
@@ -84,7 +84,7 @@ public class VictimsScannerTest {
 			int result_count = records.size();
 			assertTrue(String.format("Expected %d records, found %d.",
 					expected_count, result_count), result_count == 1);
-			String result = records.get(0).getHash(Algorithms.SHA1);
+			String result = records.get(0).getHash(Algorithms.SHA1).trim();
 			assertEquals("SHA1 mismatch", expected, result);
 		} catch (IOException e) {
 			fail("Could not scan file: " + inFile);
