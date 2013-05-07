@@ -85,13 +85,12 @@ public class VictimsScanner {
 	 * @param os
 	 * @throws IOException
 	 */
-	private static void scanSource(String source, VictimsOutputStream vos)
+	private static void scanSource(File source, VictimsOutputStream vos)
 			throws IOException {
-		File f = new File(source);
-		if (f.isDirectory()) {
-			scanDir(f, vos);
-		} else if (f.isFile()) {
-			scanFile(f, vos);
+		if (source.isDirectory()) {
+			scanDir(source, vos);
+		} else if (source.isFile()) {
+			scanFile(source, vos);
 		}
 	}
 
@@ -102,11 +101,27 @@ public class VictimsScanner {
 	 * their own.
 	 * 
 	 * @param source
+	 *            The source file/directory.
+	 * @param os
+	 * @throws IOException
+	 */
+	public static void scan(File source, OutputStream os) throws IOException {
+		scanSource(source, new StringOutputStream(os));
+	}
+
+	/**
+	 * Iteratively finds all jar files if source is a directory and scans them
+	 * or if a file , scan it. The string values of the resulting records will
+	 * be written to the specified output stream. Embedded jars are a record on
+	 * their own.
+	 * 
+	 * @param source
+	 *            An absolute path to a directory or file.
 	 * @param os
 	 * @throws IOException
 	 */
 	public static void scan(String source, OutputStream os) throws IOException {
-		scanSource(source, new StringOutputStream(os));
+		scan(new File(source), os);
 	}
 
 	/**
@@ -116,12 +131,29 @@ public class VictimsScanner {
 	 * own.
 	 * 
 	 * @param source
+	 *            The source file/directory.
+	 * @param results
+	 * @throws IOException
+	 */
+	public static void scan(File source, ArrayList<VictimsRecord> results)
+			throws IOException {
+		scanSource(source, new ArrayOutputStream(results));
+	}
+
+	/**
+	 * Iteratively finds all jar files if source is a directory and scans them
+	 * or if a file , scan it. The {@link VictimsRecord}s produced are added
+	 * into the provided {@link ArrayList}.Embedded jars are a record on their
+	 * own.
+	 * 
+	 * @param source
+	 *            An absolute path to a directory or file.
 	 * @param results
 	 * @throws IOException
 	 */
 	public static void scan(String source, ArrayList<VictimsRecord> results)
 			throws IOException {
-		scanSource(source, new ArrayOutputStream(results));
+		scan(new File(source), results);
 	}
 
 	/**
@@ -129,16 +161,31 @@ public class VictimsScanner {
 	 * or if a file , scan it.
 	 * 
 	 * @param source
+	 *            The source file/directory.
+	 * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
+	 *         source. Embedded jars are a record on their own.
+	 * @throws IOException
+	 */
+	public static ArrayList<VictimsRecord> getRecords(File source)
+			throws IOException {
+		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
+		scan(source, records);
+		return records;
+	}
+
+	/**
+	 * Iteratively finds all jar files if source is a directory and scans them
+	 * or if a file , scan it.
+	 * 
+	 * @param source
+	 *            An absolute path to a directory or file.
 	 * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
 	 *         source. Embedded jars are a record on their own.
 	 * @throws IOException
 	 */
 	public static ArrayList<VictimsRecord> getRecords(String source)
 			throws IOException {
-		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
-		scan(source, records);
-		return records;
-
+		return getRecords(new File(source));
 	}
 
 	/**
