@@ -46,16 +46,32 @@ public class VictimsRecord {
 	public String hash;
 	public HashRecords hashes;
 
+	/**
+	 * Create a {@link VictimsRecord} object when a json string is provided.
+	 * 
+	 * @param jsonStr
+	 * @return
+	 */
 	public static VictimsRecord fromJSON(String jsonStr) {
 		Gson gson = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
 		return gson.fromJson(jsonStr, VictimsRecord.class);
 	}
 
+	/**
+	 * 
+	 * @return A JSON string representation of this instance.
+	 */
 	public String toString() {
 		Gson gson = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
 		return gson.toJson(this);
 	}
 
+	/**
+	 * Processes a given {@link Metadata} object for for Manifest keys to
+	 * determine vendor, version and name.
+	 * 
+	 * @param md
+	 */
 	private void setFromMetadata(Metadata md) {
 		// TODO: add pom.properties support?
 		String vendorkey = Attributes.Name.IMPLEMENTATION_VENDOR.toString();
@@ -72,6 +88,12 @@ public class VictimsRecord {
 		}
 	}
 
+	/**
+	 * Constructor for making a {@link VictimsRecord} object from an
+	 * {@link Artifact}
+	 * 
+	 * @param artifact
+	 */
 	public VictimsRecord(Artifact artifact) {
 		this.status = RecordStatus.NEW;
 		this.meta = new ArrayList<MetaRecord>();
@@ -97,23 +119,30 @@ public class VictimsRecord {
 			this.name = FilenameUtils.getBaseName(artifact.filename());
 		}
 
+		// initiate hashes with cobined hashes and empty files hashes.
+		Fingerprint fingerprint = artifact.fingerprint();
+		if (fingerprint != null) {
+			for (Algorithms alg : fingerprint.keySet()) {
+				String key = normalizeKey(alg);
+				if (!this.hashes.containsKey(key)) {
+					Record hashRecord = new Record();
+					hashRecord.put(FieldName.FILE_HASHES, new StringMap());
+					hashRecord.put(FieldName.COMBINED_HASH, artifact
+							.fingerprint().get(alg));
+					this.hashes.put(key, hashRecord);
+				}
+			}
+		}
+
 		// Reorganize hashes if available
 		ArrayList<Artifact> artifacts = artifact.contents();
 		if (artifacts != null) {
 			for (Artifact file : artifacts) {
 				if (file.filetype().equals(".class")) {
-					Fingerprint fingerprint = file.fingerprint();
+					fingerprint = file.fingerprint();
 					if (fingerprint != null) {
 						for (Algorithms alg : fingerprint.keySet()) {
 							String key = normalizeKey(alg);
-							if (!this.hashes.containsKey(key)) {
-								Record hashRecord = new Record();
-								hashRecord.put(FieldName.FILE_HASHES,
-										new StringMap());
-								hashRecord.put(FieldName.COMBINED_HASH,
-										artifact.fingerprint().get(alg));
-								this.hashes.put(key, hashRecord);
-							}
 							((StringMap) this.hashes.get(key).get(
 									FieldName.FILE_HASHES)).put(
 									fingerprint.get(alg), file.filename());
@@ -121,6 +150,8 @@ public class VictimsRecord {
 					}
 				}
 			}
+		} else {
+
 		}
 
 		// Get the hash for the file
@@ -140,10 +171,61 @@ public class VictimsRecord {
 		return alg.toString().toLowerCase();
 	}
 
+	/**
+	 * Get the combined/file hash for this record.
+	 * 
+	 * @param alg
+	 *            The hashing algorithm.
+	 * @return The hash(alg,file), if the hash for the provided algorithm exists
+	 *         else returns ""
+	 */
+	public String getHash(Algorithms alg) {
+		String key = normalizeKey(alg);
+		if (hashes.containsKey(key)) {
+			Record record = hashes.get(key);
+			if (record.containsKey(FieldName.COMBINED_HASH)) {
+				return (String) record.get(FieldName.COMBINED_HASH);
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Return a map of {fingerprint:file} of the contents (if any) for the given
+	 * algorithm.
+	 * 
+	 * @param alg
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, String> getHashes(Algorithms alg) {
+		String key = normalizeKey(alg);
+		if (hashes.containsKey(key)) {
+			Record record = hashes.get(key);
+			if (record.containsKey(FieldName.FILE_HASHES)) {
+				return (HashMap<String, String>) record
+						.get(FieldName.FILE_HASHES);
+			}
+		}
+		return new HashMap<String, String>();
+	}
+
+	/**
+	 * Enumeration containing all possible values of the "status" field.
+	 * 
+	 * @author abn
+	 * 
+	 */
 	public static enum RecordStatus {
 		SUBMITTED, RELEASED, NEW
 	};
 
+	/**
+	 * A class containing all keys that are record specific.
+	 * 
+	 * @author abn
+	 * 
+	 */
 	public static class FieldName {
 		public static final String FILE_HASHES = "files";
 		public static final String COMBINED_HASH = "combined";
@@ -152,6 +234,13 @@ public class VictimsRecord {
 		public static final String META_FILENAME = "filename";
 	}
 
+	/**
+	 * Contains a mapping of file types to format strings expected by the
+	 * server.
+	 * 
+	 * @author abn
+	 * 
+	 */
 	public static class FormatMap {
 		protected static HashMap<String, String> MAP = new HashMap<String, String>();
 		static {
@@ -160,6 +249,12 @@ public class VictimsRecord {
 			MAP.put(".pom", "Pom");
 		}
 
+		/**
+		 * Maps a file type to its respective format name.
+		 * 
+		 * @param filetype
+		 * @return Format name if available, else returns "Unknown"
+		 */
 		public static String mapType(String filetype) {
 			if (MAP.containsKey(filetype.toLowerCase())) {
 				return MAP.get(filetype.toLowerCase());
