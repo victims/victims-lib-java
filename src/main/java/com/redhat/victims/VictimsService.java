@@ -172,7 +172,6 @@ public class VictimsService {
 				json.beginObject();
 				json.nextName(); // discard fields
 				VictimsRecord v = gson.fromJson(json, VictimsRecord.class);
-				System.out.println(v.toString());
 				json.endObject();
 				return v;
 			}
@@ -197,17 +196,4 @@ public class VictimsService {
 			return true;
 		}
 	}
-
-	public static void main(String[] args) throws IOException, ParseException {
-		// DEBUG CODE
-		// jdk 1.7 does not like name errors
-		System.setProperty("jsse.enableSNIExtension", "false");
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		RecordStream rs = new VictimsService().updates(sdf.parse("01/01/2010"));
-		while (rs.hasNext()) {
-			System.out.println(rs.getNext());
-		}
-
-	}
-
 }
