@@ -2,6 +2,7 @@ package com.redhat.victims;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,6 +138,24 @@ public class VictimsScanner {
 			throws IOException {
 		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
 		scan(source, records);
+		return records;
+
+	}
+
+	/**
+	 * Scan a file from a given {@link InputStream}.
+	 * 
+	 * @param in
+	 * @param filename
+	 * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
+	 *         source. Embedded jars are a record on their own.
+	 * @throws IOException
+	 */
+	public static ArrayList<VictimsRecord> getRecords(InputStream in,
+			String filename) throws IOException {
+		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
+		Artifact artifact = Processor.process(in, filename);
+		scanArtifact(artifact, new ArrayOutputStream(records));
 		return records;
 
 	}
