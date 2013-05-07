@@ -64,11 +64,18 @@ public class Processor {
 	 *            The file to process as a byte array.
 	 * @param fileName
 	 *            The name of the file being processed.
+	 * @param knownTypesOnly
+	 *            If set, file types known to the class are only processed. If
+	 *            set to <code>false</code> and a class is not defined
+	 *            explicitely for this type, {@link File} class will be used to
+	 *            produce the {@link Artifact}.
 	 * @return Information record of type {@link Artifact}
 	 */
-	public static Artifact process(byte[] bytes, String fileName) {
+	public static Artifact process(byte[] bytes, String fileName,
+			Boolean knownTypesOnly) {
 		String fileType = Processor.getFileType(fileName);
-		if (Processor.isKnownType(fileType)) {
+		if (!knownTypesOnly
+				|| (knownTypesOnly && Processor.isKnownType(fileType))) {
 			// Only handle types we know about eg: .class .jar
 			Class<?> cls = Processor.getProcessor(fileType);
 			try {
@@ -85,6 +92,20 @@ public class Processor {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Process the given file (as bytes) and return the information record.
+	 * 
+	 * @param bytes
+	 *            The file to process as a byte array.
+	 * @param fileName
+	 *            The name of the file being processed.
+	 * @return Information record of type {@link Artifact}
+	 */
+	public static Artifact process(byte[] bytes, String fileName) {
+		// process any file type
+		return process(bytes, fileName, false);
 	}
 
 	/**

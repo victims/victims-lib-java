@@ -63,7 +63,8 @@ public class JarFile extends AbstractFile {
 			// This is separate as we may or may not want to fingerprint
 			// all files.
 			if (RECURSIVE) {
-				Artifact record = Processor.process(file.bytes, file.name);
+				Artifact record = Processor
+						.process(file.bytes, file.name, true);
 				if (record != null) {
 					if (file.name.endsWith(".jar")) {
 						// this is an embedded archive
