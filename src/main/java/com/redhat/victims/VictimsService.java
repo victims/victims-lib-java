@@ -116,8 +116,7 @@ public class VictimsService {
 	 * @return
 	 * @throws IOException
 	 */
-	protected RecordStream fetch(Date since, String type)
-			throws IOException {
+	protected RecordStream fetch(Date since, String type) throws IOException {
 		SimpleDateFormat fmt = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
 		String uri = String.format("%s/%s/%s/%s", this.uri, this.entry_point,
 				type, fmt.format(since));
