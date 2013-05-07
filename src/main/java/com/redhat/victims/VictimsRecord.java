@@ -91,29 +91,33 @@ public class VictimsRecord {
 			}
 		}
 
+		this.format = FormatMap.mapType(artifact.filetype());
 		if (this.name == null) {
 			// If metadata did not provide a name then use filename
 			this.name = FilenameUtils.getBaseName(artifact.filename());
 		}
 
 		// Reorganize hashes if available
-		for (Artifact file : artifact.contents()) {
-			if (file.filetype().equals(".class")) {
-				Fingerprint fingerprint = file.fingerprint();
-				if (fingerprint != null) {
-					for (Algorithms alg : fingerprint.keySet()) {
-						String key = normalizeKey(alg);
-						if (!this.hashes.containsKey(key)) {
-							Record hashRecord = new Record();
-							hashRecord.put(FieldName.FILE_HASHES,
-									new StringMap());
-							hashRecord.put(FieldName.COMBINED_HASH, artifact
-									.fingerprint().get(alg));
-							this.hashes.put(key, hashRecord);
+		ArrayList<Artifact> artifacts = artifact.contents();
+		if (artifacts != null) {
+			for (Artifact file : artifacts) {
+				if (file.filetype().equals(".class")) {
+					Fingerprint fingerprint = file.fingerprint();
+					if (fingerprint != null) {
+						for (Algorithms alg : fingerprint.keySet()) {
+							String key = normalizeKey(alg);
+							if (!this.hashes.containsKey(key)) {
+								Record hashRecord = new Record();
+								hashRecord.put(FieldName.FILE_HASHES,
+										new StringMap());
+								hashRecord.put(FieldName.COMBINED_HASH,
+										artifact.fingerprint().get(alg));
+								this.hashes.put(key, hashRecord);
+							}
+							((StringMap) this.hashes.get(key).get(
+									FieldName.FILE_HASHES)).put(
+									fingerprint.get(alg), file.filename());
 						}
-						((StringMap) this.hashes.get(key).get(
-								FieldName.FILE_HASHES)).put(
-								fingerprint.get(alg), file.filename());
 					}
 				}
 			}
@@ -146,6 +150,22 @@ public class VictimsRecord {
 		public static final String SHA512 = "sha512";
 		public static final String META_PROPERTIES = "properties";
 		public static final String META_FILENAME = "filename";
+	}
+
+	public static class FormatMap {
+		protected static HashMap<String, String> MAP = new HashMap<String, String>();
+		static {
+			MAP.put(".jar", "Jar");
+			MAP.put(".class", "Class");
+			MAP.put(".pom", "Pom");
+		}
+
+		public static String mapType(String filetype) {
+			if (MAP.containsKey(filetype.toLowerCase())) {
+				return MAP.get(filetype.toLowerCase());
+			}
+			return "Unknown";
+		}
 	}
 
 	@SuppressWarnings("serial")
