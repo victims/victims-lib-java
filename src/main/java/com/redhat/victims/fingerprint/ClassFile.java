@@ -9,6 +9,8 @@ import org.apache.bcel.classfile.*;
 import org.apache.bcel.util.ByteSequence;
 import org.apache.commons.io.IOUtils;
 
+import com.redhat.victims.VictimsConfig;
+
 /**
  * Implements handling of .class byte code for fingerprinting.
  * 
@@ -294,6 +296,9 @@ public class ClassFile extends File {
 							buf.append(bytes.readUnsignedByte());
 							buf.append(bytes.readUnsignedByte());
 							break;
+
+						default:
+							break;
 						}
 					}
 				}
@@ -317,51 +322,51 @@ public class ClassFile extends File {
 			throws IOException {
 		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
 		ClassParser parser = new ClassParser(is, fileName);
-		String ref = "";
+		StringBuffer buf = new StringBuffer();
 		JavaClass klass = parser.parse();
 		ConstantPool cpool = klass.getConstantPool();
 		// source file
-		ref += klass.getSourceFileName();
+		buf.append(klass.getSourceFileName());
 		// access flags
-		ref += String.valueOf(klass.getAccessFlags());
+		buf.append(String.valueOf(klass.getAccessFlags()));
 		// this class
-		ref += constantValue(klass.getClassNameIndex(), cpool);
+		buf.append(constantValue(klass.getClassNameIndex(), cpool));
 		// super class (extends)
-		ref += constantValue(klass.getSuperclassNameIndex(), cpool);
+		buf.append(constantValue(klass.getSuperclassNameIndex(), cpool));
 		// interfaces (implements)
 		for (int index : klass.getInterfaceIndices()) {
 			// implemented interface name
-			ref += constantValue(index, cpool);
+			buf.append(constantValue(index, cpool));
 		}
 		// fields
 		for (Field f : klass.getFields()) {
 			// access flags
-			ref += String.valueOf(f.getAccessFlags());
+			buf.append(String.valueOf(f.getAccessFlags()));
 			// name
-			ref += constantValue(f.getNameIndex(), cpool);
+			buf.append(constantValue(f.getNameIndex(), cpool));
 			// signature
-			ref += constantValue(f.getSignatureIndex(), cpool);
+			buf.append(constantValue(f.getSignatureIndex(), cpool));
 			// value
 			if (f.getConstantValue() != null) {
 				int index = f.getConstantValue().getConstantValueIndex();
-				ref += constantValue(index, klass.getConstantPool());
+				buf.append(constantValue(index, klass.getConstantPool()));
 			}
 		}
 		// methods
 		for (Method m : klass.getMethods()) {
 			// access flags
-			ref += String.valueOf(m.getAccessFlags());
+			buf.append(String.valueOf(m.getAccessFlags()));
 			// name
-			ref += constantValue(m.getNameIndex(), cpool);
+			buf.append(constantValue(m.getNameIndex(), cpool));
 			// signature
-			ref += constantValue(m.getSignatureIndex(), cpool);
+			buf.append(constantValue(m.getSignatureIndex(), cpool));
 			// code
 			Code code = m.getCode();
 			if (code != null) {
 				ByteSequence bytecode = new ByteSequence(code.getCode());
-				ref += formatBytecode(bytecode, cpool);
+				buf.append(formatBytecode(bytecode, cpool));
 			}
 		}
-		return ref.getBytes();
+		return buf.toString().getBytes(VictimsConfig.charset());
 	}
 }
