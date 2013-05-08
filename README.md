@@ -10,7 +10,6 @@ A java library providing fingerprinting of java binaries and REST-API client cla
 
 ### Generating artifacts
 Once you have cloned the repository, you can genereate the _victims-lib_ artifactions using any of the following commands.
-
 ```sh
 mvn clean package
 ```
