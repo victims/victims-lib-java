@@ -34,5 +34,11 @@ mvn site
 
 If you require _findbug_ reporting, make sure to run a goal that will require comilation. eg:
 ```sh
-mvn clean tests site
+mvn clean test site
+```
+
+## Running Tests
+To execute all tests:
+```sh
+mvn test
 ```
