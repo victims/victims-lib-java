@@ -207,7 +207,7 @@ public class VictimsScanner {
 		public void write(VictimsRecord record) throws IOException {
 			String line = record.toString();
 			line += "\n";
-			os.write(line.getBytes());
+			os.write(line.getBytes(VictimsConfig.charset()));
 		}
 	}
 }

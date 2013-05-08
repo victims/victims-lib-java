@@ -242,7 +242,7 @@ public class VictimsRecord {
 	 * 
 	 */
 	public static class FormatMap {
-		protected static HashMap<String, String> MAP = new HashMap<String, String>();
+		protected static final HashMap<String, String> MAP = new HashMap<String, String>();
 		static {
 			MAP.put(".jar", "Jar");
 			MAP.put(".class", "Class");

@@ -24,7 +24,7 @@ public class JarFile extends AbstractFile {
 	/**
 	 * Indicates if archive contents get processed. Default is true.
 	 */
-	public static boolean RECURSIVE = true;
+	public static final boolean RECURSIVE = true;
 	private static final int BUFFER = 2048;
 
 	protected ArrayList<Object> contents;
@@ -149,7 +149,7 @@ public class JarFile extends AbstractFile {
 	 * @author abn
 	 * 
 	 */
-	protected final class Content {
+	protected static class Content {
 		public String name;
 		public byte[] bytes;
 

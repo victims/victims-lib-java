@@ -18,7 +18,7 @@ public class Artifact extends HashMap<Key, Object> {
 	/**
 	 * Maintains a list of value types that can be added to the record.
 	 */
-	protected static ArrayList<Class<?>> PERMITTED_VALUE_TYPES = new ArrayList<Class<?>>();
+	protected static final ArrayList<Class<?>> PERMITTED_VALUE_TYPES = new ArrayList<Class<?>>();
 	static {
 		PERMITTED_VALUE_TYPES.add(Artifact.class);
 		PERMITTED_VALUE_TYPES.add(String.class);

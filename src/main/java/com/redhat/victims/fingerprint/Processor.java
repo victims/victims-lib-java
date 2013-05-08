@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -19,8 +20,8 @@ import org.apache.commons.io.IOUtils;
  * 
  */
 public class Processor {
-	private static DefaultHashMap<String, Class<?>> TYPE_MAP = 
-			new DefaultHashMap<String, Class<?>>(File.class);
+	private static DefaultHashMap<String, Class<?>> TYPE_MAP = new DefaultHashMap<String, Class<?>>(
+			File.class);
 
 	// Keys used in records
 	public static String CONTENT_KEY = "content";
@@ -78,18 +79,25 @@ public class Processor {
 				|| (knownTypesOnly && Processor.isKnownType(fileType))) {
 			// Only handle types we know about eg: .class .jar
 			Class<?> cls = Processor.getProcessor(fileType);
-			try {
-				if (AbstractFile.class.isAssignableFrom(cls)) {
+
+			if (AbstractFile.class.isAssignableFrom(cls)) {
+				try {
 					// TOOD: Maybe find a better way of doing this.
-					Constructor<?> ctor = cls.getConstructor(byte[].class,
-							String.class);
-					Object object = ctor.newInstance(new Object[] { bytes,
-							fileName });
+					Constructor<?> ctor;
+					ctor = cls.getConstructor(byte[].class, String.class);
+					Object object;
+					object = ctor.newInstance(new Object[] { bytes, fileName });
 					return ((FingerprintInterface) object).getRecord();
+				} catch (NoSuchMethodException e) {
+				} catch (SecurityException e) {
+				} catch (InstantiationException e) {
+				} catch (IllegalAccessException e) {
+				} catch (IllegalArgumentException e) {
+				} catch (InvocationTargetException e) {
+				} catch (Exception e) {
 				}
-			} catch (Exception e) {
-				// TODO: Handle bad file
 			}
+
 		}
 		return null;
 	}
