@@ -2,7 +2,7 @@ package com.redhat.victims.fingerprint;
 
 /*
  * #%L
- * This file is part of the victims-lib.
+ * This file is part of victims-lib.
  * %%
  * Copyright (C) 2013 The Victims Project
  * %%

@@ -1,2 +1,2 @@
-This file is part of the ${projectName}.
+This file is part of ${projectName}.
 
