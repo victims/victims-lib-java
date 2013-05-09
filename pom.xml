@@ -37,7 +37,7 @@
 
 	<name>victims-lib</name>
 	<url>https://github.com/victims/victims-lib-java</url>
-	<description>A java library providing fingerprinting of java binaries and REST-API client classes for the Victims Project.</description>
+	<description>A java library providing fingerprinting and service interaction for the Victims Project.</description>
 	<organization>
 		<name>The Victims Project</name>
 		<url>http://victi.ms</url>
