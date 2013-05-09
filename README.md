@@ -27,7 +27,7 @@ If you are preparing for release and want to generate the source and javadoc jar
 mvn clean package -Drelease=true
 ```
 
-By default the artifacts are not signed. If you require gpg signed artifacts, then set the _sign_ option to _true_.
+By default the artifacts are not signed. If you require gpg signed artifacts,
 ```sh
 mvn clean package -Drelease=true gpg:sign -Dgpg.keyname=EEE72232
 ```
