@@ -20,31 +20,23 @@ Once you have cloned the repository, you can genereate the _victims-lib_ artifac
 ```sh
 mvn clean package
 ```
-
-### Releases
-If you are preparing for release and want to generate the source and javadoc jars along with the main jar, you need to set the _release_ option to _true_.
-```sh
-mvn clean package -Drelease=true
-```
-
 By default the artifacts are not signed. If you require gpg signed artifacts,
 ```sh
 mvn clean package -Drelease=true gpg:sign -Dgpg.keyname=EEE72232
 ```
-
-### Generating reports and site contents
-The following command generate default sute contents and reports.
-```sh
-mvn site
-```
-
-If you require _findbug_ reporting, make sure to run a goal that will require comilation. eg:
-```sh
-mvn clean test site
-```
-
 ## Running Tests
 To execute all tests:
 ```sh
 mvn test
 ```
+To run only offlinetests:
+```sh
+mvn test -Dtest=OfflineTests
+```
+### Releases
+```sh
+mvn release:clean
+mvn release:prepare
+mvn release:perform
+```
+
