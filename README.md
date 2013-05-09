@@ -32,10 +32,3 @@ To run only offlinetests:
 ```sh
 mvn test -Dtest=OfflineTests
 ```
-## Performing a release
-```sh
-mvn release:clean
-mvn release:prepare
-mvn release:perform
-```
-
