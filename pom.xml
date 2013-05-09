@@ -35,11 +35,21 @@
 		</dependency>
 	</dependencies>
 
-
 	<name>victims-lib</name>
 	<url>https://github.com/victims/victims-lib-java</url>
 	<description>A java library providing fingerprinting of java binaries and REST-API client classes for the Victims Project.</description>
+	<organization>
+		<name>The Victims Project</name>
+		<url>http://victi.ms</url>
+	</organization>
 	<inceptionYear>2013</inceptionYear>
+	<licenses>
+		<license>
+			<name>GNU Affero General Public License, Version 3</name>
+			<url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 	<developers>
 		<developer>
 			<id>abn</id>
@@ -66,6 +76,18 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.4</version>
+				<configuration>
+					<verbose>false</verbose>
+					<licenseName>agpl_v3</licenseName>
+					<excludes>
+						<exclude>*Test.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -106,7 +128,6 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.1</version>
-						<configuration></configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
