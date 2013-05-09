@@ -3,6 +3,13 @@ victims-lib-java [![Build Status](https://travis-ci.org/victims/victims-lib-java
 
 A java library providing fingerprinting of java binaries and REST-API client classes for the Victims Project.
 
+### GPG Keys
+Download: [pgp.mit.edu](http://pgp.mit.edu:11371/pks/lookup?search=0xEEE72232&op=index)
+
+Fingerprint:
+```
+47DB 2877 89B2 1722 B6D9 5DDE 5326 8101 3701 7186
+```
 ## Building from source
 ### Requrements
 * java 1.6
