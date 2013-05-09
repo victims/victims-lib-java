@@ -29,7 +29,7 @@ mvn clean package -Drelease=true
 
 By default the artifacts are not signed. If you require gpg signed artifacts, then set the _sign_ option to _true_.
 ```sh
-mvn clean package -Drelease=true -Dsign=true
+mvn clean package -Drelease=true gpg:sign -Dgpg.keyname=EEE72232
 ```
 
 ### Generating reports and site contents
