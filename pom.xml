@@ -71,6 +71,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<gpg.keyname>EEE72232</gpg.keyname>
 	</properties>
 
 	<build>
@@ -125,9 +126,6 @@
 					<value>true</value>
 				</property>
 			</activation>
-			<properties>
-				<gpg.keyname>EEE72232</gpg.keyname>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
