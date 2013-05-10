@@ -9,14 +9,22 @@ Fingerprint:
 ```
 47DB 2877 89B2 1722 B6D9 5DDE 5326 8101 3701 7186
 ```
-## Using in your maven project
-Add the following to your _pom.xml_ dependencies.
+## Using in your project
+### Maven
+Update your _pom.xml_ dependencies.
 ```xml
 <dependency>
   <groupId>com.redhat.victims</groupId>
   <artifactId>victims-lib</artifactId>
   <version>1.0</version>
 </dependency>
+```
+### Gradle
+Update your _build.gradle_ dependencies.
+```groovy
+dependencies {
+    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.0'
+}
 ```
 ## Building from source
 ### Requrements
