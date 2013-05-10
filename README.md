@@ -9,6 +9,15 @@ Fingerprint:
 ```
 47DB 2877 89B2 1722 B6D9 5DDE 5326 8101 3701 7186
 ```
+## Using in your maven project
+Add the following to your _pom.xml_ dependencies.
+```xml
+<dependency>
+  <groupId>com.redhat.victims</groupId>
+  <artifactId>victims-lib</artifactId>
+  <version>1.0</version>
+</dependency>
+```
 ## Building from source
 ### Requrements
 * java 1.6
