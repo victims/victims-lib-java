@@ -171,8 +171,6 @@ public class VictimsRecord {
 					}
 				}
 			}
-		} else {
-
 		}
 
 		// Get the hash for the file
