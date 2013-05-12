@@ -44,6 +44,7 @@ import com.redhat.victims.fingerprint.Metadata;
  * 
  */
 public class VictimsRecord {
+	protected static final String UNKNOWN = Placeholder.UNKNOWN.toString();
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 	public static final String SCHEMA_VERSION = "2.0";
 
@@ -98,13 +99,13 @@ public class VictimsRecord {
 		String vendorkey = Attributes.Name.IMPLEMENTATION_VENDOR.toString();
 		String versionkey = Attributes.Name.IMPLEMENTATION_VERSION.toString();
 		String namekey = Attributes.Name.IMPLEMENTATION_TITLE.toString();
-		if (this.vendor == null) {
+		if (this.vendor.equals(UNKNOWN) && md.containsKey(vendorkey)) {
 			this.vendor = md.get(vendorkey);
 		}
-		if (this.version == null) {
+		if (this.version.equals(UNKNOWN) && md.containsKey(versionkey)) {
 			this.version = md.get(versionkey);
 		}
-		if (this.name == null) {
+		if (this.name.equals(UNKNOWN) && md.containsKey(namekey)) {
 			this.name = md.get(namekey);
 		}
 	}
@@ -116,6 +117,9 @@ public class VictimsRecord {
 	 * @param artifact
 	 */
 	public VictimsRecord(Artifact artifact) {
+		this.name = UNKNOWN;
+		this.vendor = UNKNOWN;
+		this.version = UNKNOWN;
 		this.status = RecordStatus.NEW;
 		this.meta = new ArrayList<MetaRecord>();
 		this.hashes = new HashRecords();
@@ -135,7 +139,7 @@ public class VictimsRecord {
 		}
 
 		this.format = FormatMap.mapType(artifact.filetype());
-		if (this.name == null) {
+		if (this.name.equals(UNKNOWN)) {
 			// If metadata did not provide a name then use filename
 			this.name = FilenameUtils.getBaseName(artifact.filename());
 		}
@@ -238,6 +242,16 @@ public class VictimsRecord {
 	public static enum RecordStatus {
 		SUBMITTED, RELEASED, NEW
 	};
+
+	/**
+	 * Enumeration containing all possible placeholders.
+	 * 
+	 * @author abn
+	 * 
+	 */
+	public static enum Placeholder {
+		UNKNOWN
+	}
 
 	/**
 	 * A class containing all keys that are record specific.
