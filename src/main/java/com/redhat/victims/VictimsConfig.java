@@ -51,8 +51,8 @@ public class VictimsConfig {
 	static {
 		DEFAULT_PROPS.put(URI_KEY, "http://www.victi.ms/");
 		DEFAULT_PROPS.put(ENTRY_KEY, "service/");
-		DEFAULT_PROPS.put(CACHE_KEY, FilenameUtils.concat(
-				System.getProperty("user.home"), ".victims"));
+		DEFAULT_PROPS.put(CACHE_KEY, FilenameUtils.concat(FileUtils
+				.getUserDirectory().getAbsolutePath(), ".victims"));
 		DEFAULT_PROPS.put(DB_DRIVER_KEY, "org.h2.Driver");
 	}
 
