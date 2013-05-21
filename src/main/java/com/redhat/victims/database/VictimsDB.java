@@ -16,7 +16,7 @@ public class VictimsDB {
 	private static final HashMap<String, Class<?>> DRIVER_MAP = new HashMap<String, Class<?>>();
 
 	static {
-		DRIVER_MAP.put("org.h2.Driver", VictimsH2DB.class.getClass());
+		DRIVER_MAP.put("org.h2.Driver", VictimsH2DB.class);
 	}
 
 	/**
@@ -28,21 +28,21 @@ public class VictimsDB {
 	 */
 	public static VictimsDBInterface db() throws VictimsException {
 		String driver = VictimsConfig.dbDriver();
-		String msg = "";
+		Throwable throwable = null;
 		if (DRIVER_MAP.containsKey(driver)) {
 			try {
 				return (VictimsDBInterface) DRIVER_MAP.get(driver)
 						.newInstance();
 			} catch (InstantiationException e) {
-				msg = String.format(e.getMessage());
+				throwable = e;
 			} catch (IllegalAccessException e) {
-				msg = String.format(e.getMessage());
+				throwable = e;
 			}
 		} else {
-			msg = String.format("Invalid database driver (%s) configured.",
-					driver);
+			throw new VictimsException(String.format("Invalid database driver (%s) configured.",
+					driver));
 		}
-		throw new VictimsException(msg);
+		throw new VictimsException("Failed to get a Victims Database instance.", throwable);
 	}
 
 }
