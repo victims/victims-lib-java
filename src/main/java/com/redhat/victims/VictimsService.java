@@ -24,6 +24,7 @@ package com.redhat.victims;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,58 +45,16 @@ import com.google.gson.stream.JsonReader;
  * 
  */
 public class VictimsService {
-	protected static final String DEFAULT_URI = "https://victims-websec.rhcloud.com";
-	protected static final String DEFAULT_ENTRY_POINT = "/service/v2";
 	protected String uri;
-	protected String entry_point;
 
 	/**
 	 * Create a VictimsService instance with the default uri and entry point.
-	 */
-	public VictimsService() {
-		this.uri = DEFAULT_URI;
-		this.entry_point = DEFAULT_ENTRY_POINT;
-
-	}
-
-	/**
-	 * Create a VictimsService instance with the specified uri and entry point.
 	 * 
-	 * @param uri
-	 *            The base uri pointint to a victims-web service.
-	 * @param entry_point
-	 *            The entry point to be used for this service.
+	 * @throws MalformedURLException
 	 */
-	public VictimsService(String uri, String entry_point) {
-		this.uri = uri;
-		this.entry_point = entry_point;
-	}
+	public VictimsService() throws MalformedURLException {
+		this.uri = VictimsConfig.serviceURI();
 
-	/**
-	 * Create a VictimsService instance with the specified uri and default entry
-	 * point.
-	 * 
-	 * @param uri
-	 *            The base uri pointint to a victims-web service.
-	 */
-	public VictimsService(String uri) {
-		this(uri, DEFAULT_ENTRY_POINT);
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public String getURI() {
-		return this.uri;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public String getEntryPoint() {
-		return this.entry_point;
 	}
 
 	/**
@@ -138,9 +97,9 @@ public class VictimsService {
 	 */
 	protected RecordStream fetch(Date since, String type) throws IOException {
 		SimpleDateFormat fmt = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
-		String uri = String.format("%s/%s/%s/%s", this.uri, this.entry_point,
-				type, fmt.format(since));
-		return new RecordStream(uri);
+		URL merged = new URL(new URL(new URL(this.uri), type),
+				fmt.format(since));
+		return new RecordStream(merged.toString());
 	}
 
 	/**
