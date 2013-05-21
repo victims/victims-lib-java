@@ -222,7 +222,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				throwable);
 	}
 
-	public boolean synchronize() throws VictimsException {
+	public void synchronize() throws VictimsException {
 		Throwable throwable = null;
 		try {
 			Savepoint savepoint = this.connection.setSavepoint();
@@ -240,8 +240,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 
 				// reset cache
 				cachedCount = null;
-
-				return true;
 			} catch (IOException e) {
 				throwable = e;
 			} catch (SQLException e) {

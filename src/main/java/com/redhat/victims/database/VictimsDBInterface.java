@@ -19,13 +19,11 @@ public interface VictimsDBInterface {
 
 	/**
 	 * Synchronizes the database with the changes fetched from the victi.ms
-	 * service
+	 * service.
 	 * 
-	 * @return <code>true</code> if the the sync was successful else
-	 *         <code>false</code>.
 	 * @throws VictimsException
 	 */
-	public boolean synchronize() throws VictimsException;
+	public void synchronize() throws VictimsException;
 
 	/**
 	 * Given a {@link VictimsRecord}, finds all CVEs that the artifact is
