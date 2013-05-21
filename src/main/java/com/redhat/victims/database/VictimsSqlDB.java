@@ -295,7 +295,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 			cves.addAll(getVulnerabilities(vr.hash.trim()));
 
 			// Match any embedded filehashes
-			HashMap<Integer, String> hashCount = new HashMap<Integer, String>();
+			HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
 
 			/*
 			 * FIXME: The current h2 jdbc implementation does not do this
@@ -321,7 +321,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 			rs = stmt.executeQuery(sql);
 
 			while (rs.next()) {
-				hashCount.put(rs.getInt(1), rs.getString(2));
+				hashCount.put(rs.getInt(1), rs.getInt(2));
 			}
 
 			if (hashCount.size() > 0) {
