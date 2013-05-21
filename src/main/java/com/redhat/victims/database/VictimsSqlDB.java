@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
@@ -298,11 +299,16 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		 * System.out.println(countMatchedFileHash.toString().replace(",",
 		 * "\n")); rs = countMatchedFileHash.executeQuery();
 		 */
+		Set<String> hashes = vr.getHashes(Algorithms.SHA512).keySet();
+
+		if (hashes.size() <= 0) {
+			return cves;
+		}
 
 		// Temporary statement construction
 		String sql = Query.FILEHASH_MATCHES_PER_RECORD.replace("?", "%s");
 		String contents = "'";
-		for (String content : vr.getHashes(Algorithms.SHA512).keySet()) {
+		for (String content : hashes) {
 			contents += content + "', '";
 		}
 		// chop of the last 3 charectors ", '"
