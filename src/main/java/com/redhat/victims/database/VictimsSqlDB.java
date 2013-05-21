@@ -284,64 +284,67 @@ public class VictimsSqlDB implements VictimsDBInterface {
 
 	}
 
+	public ArrayList<String> getEmbeddedVulnerabilities(VictimsRecord vr)
+			throws SQLException {
+		ArrayList<String> cves = new ArrayList<String>();
+		HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
+
+		/*
+		 * FIXME: The current h2 jdbc implementation does not do this correctly.
+		 * This is done by hand now instead.
+		 * 
+		 * countMatchedFileHash.setObject(1,
+		 * vr.getHashes(Algorithms.SHA512).keySet().toArray());
+		 * System.out.println(countMatchedFileHash.toString().replace(",",
+		 * "\n")); rs = countMatchedFileHash.executeQuery();
+		 */
+
+		// Temporary statement construction
+		String sql = Query.FILEHASH_MATCHES_PER_RECORD.replace("?", "%s");
+		String contents = "'";
+		for (String content : vr.getHashes(Algorithms.SHA512).keySet()) {
+			contents += content + "', '";
+		}
+		// chop of the last 3 charectors ", '"
+		contents = contents.substring(0, contents.length() - 3);
+
+		sql = String.format(sql, contents);
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
+
+		while (rs.next()) {
+			hashCount.put(rs.getInt(1), rs.getInt(2));
+		}
+
+		if (hashCount.size() > 0) {
+			if (cachedCount == null) {
+				// populate cache if not available
+				cachedCount = new HashMap<Integer, Integer>();
+				rs = countFileHashes.executeQuery();
+				while (rs.next()) {
+					cachedCount.put(rs.getInt("record"), rs.getInt(2));
+				}
+			}
+
+			for (Integer id : hashCount.keySet()) {
+				// Match every record that has all its filehashes in
+				// the provided VictimsRecord
+				if (hashCount.get(id).equals(cachedCount.get(id))) {
+					cves.addAll(getVulnerabilities(id));
+				}
+			}
+		}
+		return cves;
+	}
+
 	public ArrayList<String> getVulnerabilities(VictimsRecord vr)
 			throws VictimsException {
 		try {
-			// TODO: Implement GAV/MANIFEST.MF matching
 			ArrayList<String> cves = new ArrayList<String>();
-			ResultSet rs;
-
 			// Match jar sha512
 			cves.addAll(getVulnerabilities(vr.hash.trim()));
-
 			// Match any embedded filehashes
-			HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
-
-			/*
-			 * FIXME: The current h2 jdbc implementation does not do this
-			 * correctly. This is done by hand now instead.
-			 * 
-			 * countMatchedFileHash.setObject(1,
-			 * vr.getHashes(Algorithms.SHA512).keySet().toArray());
-			 * System.out.println(countMatchedFileHash.toString().replace(",",
-			 * "\n")); rs = countMatchedFileHash.executeQuery();
-			 */
-
-			// Temporary statement construction
-			String sql = Query.FILEHASH_MATCHES_PER_RECORD.replace("?", "%s");
-			String contents = "'";
-			for (String content : vr.getHashes(Algorithms.SHA512).keySet()) {
-				contents += content + "', '";
-			}
-			// chop of the last 3 charectors ", '"
-			contents = contents.substring(0, contents.length() - 3);
-
-			sql = String.format(sql, contents);
-			Statement stmt = connection.createStatement();
-			rs = stmt.executeQuery(sql);
-
-			while (rs.next()) {
-				hashCount.put(rs.getInt(1), rs.getInt(2));
-			}
-
-			if (hashCount.size() > 0) {
-				if (cachedCount == null) {
-					// populate cache if not available
-					cachedCount = new HashMap<Integer, Integer>();
-					rs = countFileHashes.executeQuery();
-					while (rs.next()) {
-						cachedCount.put(rs.getInt("record"), rs.getInt(2));
-					}
-				}
-
-				for (Integer id : hashCount.keySet()) {
-					// Match every record that has all its filehashes in
-					// the provided VictimsRecord
-					if (hashCount.get(id).equals(cachedCount.get(id))) {
-						cves.addAll(getVulnerabilities(id));
-					}
-				}
-			}
+			cves.addAll(getEmbeddedVulnerabilities(vr));
 			return cves;
 		} catch (SQLException e) {
 			throw new VictimsException(
