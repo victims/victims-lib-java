@@ -29,6 +29,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.google.gson.Gson;
@@ -45,7 +47,8 @@ import com.google.gson.stream.JsonReader;
  * 
  */
 public class VictimsService {
-	protected String uri;
+	protected String baseURI;
+	protected String serviceEntry;
 
 	/**
 	 * Create a VictimsService instance with the default uri and entry point.
@@ -53,7 +56,8 @@ public class VictimsService {
 	 * @throws MalformedURLException
 	 */
 	public VictimsService() throws MalformedURLException {
-		this.uri = VictimsConfig.serviceURI();
+		this.baseURI = VictimsConfig.uri();
+		this.serviceEntry = VictimsConfig.entry();
 
 	}
 
@@ -97,8 +101,10 @@ public class VictimsService {
 	 */
 	protected RecordStream fetch(Date since, String type) throws IOException {
 		SimpleDateFormat fmt = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
-		URL merged = new URL(new URL(new URL(this.uri), type),
-				fmt.format(since));
+		String spec = FileUtils.getFile(serviceEntry, type, fmt.format(since))
+				.toString();
+		spec = FilenameUtils.normalize(spec, true);
+		URL merged = new URL(new URL(baseURI), spec);
 		return new RecordStream(merged.toString());
 	}
 
