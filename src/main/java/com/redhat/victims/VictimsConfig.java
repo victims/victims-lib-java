@@ -39,29 +39,15 @@ import org.apache.commons.io.FilenameUtils;
  * 
  */
 public class VictimsConfig {
-	private static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
-
-	public static final String URI_KEY = "victims.service.uri";
-	public static final String ENTRY_KEY = "victims.service.entry";
-	public static final String CACHE_KEY = "victims.local.cache";
-	public static final String DB_DRIVER_KEY = "victims.local.db.driver";
-
 	public static final HashMap<String, String> DEFAULT_PROPS = new HashMap<String, String>();
 
 	static {
-		DEFAULT_PROPS.put(URI_KEY, "http://www.victi.ms/");
-		DEFAULT_PROPS.put(ENTRY_KEY, "service/");
-		DEFAULT_PROPS.put(CACHE_KEY, FilenameUtils.concat(FileUtils
+		DEFAULT_PROPS.put(Key.URI, "http://www.victi.ms/");
+		DEFAULT_PROPS.put(Key.ENTRY, "service/");
+		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
+		DEFAULT_PROPS.put(Key.CACHE, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
-		DEFAULT_PROPS.put(DB_DRIVER_KEY, "org.h2.Driver");
-	}
-
-	/**
-	 * 
-	 * @return Default encoding.
-	 */
-	public static Charset charset() {
-		return DEFAULT_ENCODING;
+		DEFAULT_PROPS.put(Key.DB_DRIVER, "org.h2.Driver");
 	}
 
 	/**
@@ -85,12 +71,21 @@ public class VictimsConfig {
 	}
 
 	/**
+	 * 
+	 * @return Default encoding.
+	 */
+	public static Charset charset() {
+		String enc = getPropertyValue(Key.ENCODING);
+		return Charset.forName(enc);
+	}
+
+	/**
 	 * Get the webservice base URI.
 	 * 
 	 * @return
 	 */
 	public static String uri() {
-		return getPropertyValue(URI_KEY);
+		return getPropertyValue(Key.URI);
 	}
 
 	/**
@@ -99,7 +94,7 @@ public class VictimsConfig {
 	 * @return
 	 */
 	public static String entry() {
-		return getPropertyValue(ENTRY_KEY);
+		return getPropertyValue(Key.ENTRY);
 	}
 
 	/**
@@ -121,7 +116,7 @@ public class VictimsConfig {
 	 * @throws IOException
 	 */
 	public static File cache() throws IOException {
-		File directory = new File(getPropertyValue(CACHE_KEY));
+		File directory = new File(getPropertyValue(Key.CACHE));
 		if (!directory.exists()) {
 			FileUtils.forceMkdir(directory);
 		}
@@ -134,7 +129,25 @@ public class VictimsConfig {
 	 * @return
 	 */
 	public static String dbDriver() {
-		return getPropertyValue(DB_DRIVER_KEY);
+		return getPropertyValue(Key.DB_DRIVER);
+	}
+
+	/**
+	 * Is a force database update required.
+	 * 
+	 * @return
+	 */
+	public static boolean forcedUpdate() {
+		return Boolean.getBoolean(Key.DB_FORCE_UPDATE);
+	}
+
+	public static class Key {
+		public static final String URI = "victims.service.uri";
+		public static final String ENTRY = "victims.service.entry";
+		public static final String ENCODING = "victims.encoding";
+		public static final String CACHE = "victims.cache";
+		public static final String DB_DRIVER = "victims.db.driver";
+		public static final String DB_FORCE_UPDATE = "victims.db.force";
 	}
 
 }
