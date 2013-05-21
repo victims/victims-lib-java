@@ -24,6 +24,7 @@ package com.redhat.victims;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.Attributes;
 
 import org.apache.commons.io.FilenameUtils;
@@ -221,16 +222,31 @@ public class VictimsRecord {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public HashMap<String, String> getHashes(Algorithms alg) {
+	public Map<String, String> getHashes(Algorithms alg) {
 		String key = normalizeKey(alg);
 		if (hashes.containsKey(key)) {
 			Record record = hashes.get(key);
 			if (record.containsKey(FieldName.FILE_HASHES)) {
-				return (HashMap<String, String>) record
-						.get(FieldName.FILE_HASHES);
+				return (Map<String, String>) record.get(FieldName.FILE_HASHES);
 			}
 		}
 		return new HashMap<String, String>();
+	}
+
+	/**
+	 * Return a flattenned key/value map of all available properties from all
+	 * {@link MetaRecord}s
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, String> getFlattenedMetaData() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		for (MetaRecord mr : meta) {
+			result.putAll((Map<String, String>) mr
+					.get(FieldName.META_PROPERTIES));
+		}
+		return result;
 	}
 
 	/**
