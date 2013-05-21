@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.gson.stream.MalformedJsonException;
 import com.redhat.victims.VictimsService.RecordStream;
 
 public class VictimsServiceTest {
@@ -55,7 +56,9 @@ public class VictimsServiceTest {
 		} catch (IOException e) {
 			// Allow this test to succeed if there was an exception in
 			// communicating with the server.
-			if (!e.getMessage().contains("Server returned HTTP response code")) {
+			if (!(e instanceof MalformedJsonException)
+					&& !e.getMessage().contains(
+							"Server returned HTTP response code")) {
 				throw e;
 			} else {
 				System.out.println("Skipping services update test: "
