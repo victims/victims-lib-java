@@ -388,8 +388,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 			HashSet<String> cves = new HashSet<String>();
 			// Match jar sha512
 			cves.addAll(getVulnerabilities(vr.hash.trim()));
-			// Match on properties
-			cves.addAll(getVulnerabilities(vr.getFlattenedMetaData()));
 			// Match any embedded filehashes
 			cves.addAll(getEmbeddedVulnerabilities(vr));
 			return cves;
