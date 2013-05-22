@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -38,19 +39,20 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	protected String password = "victims";
 
 	// Prepared statements used
-	PreparedStatement insertRecord;
-	PreparedStatement insertFileHash;
-	PreparedStatement insertMeta;
-	PreparedStatement insertCVE;
-	PreparedStatement fetchRecordId;
-	PreparedStatement fetchCVES;
-	PreparedStatement deleteRecordHash;
-	PreparedStatement deleteRecordId;
-	PreparedStatement deleteFileHashes;
-	PreparedStatement deleteMeta;
-	PreparedStatement deleteCVES;
-	PreparedStatement countMatchedFileHash;
-	PreparedStatement countFileHashes;
+	protected PreparedStatement insertRecord;
+	protected PreparedStatement insertFileHash;
+	protected PreparedStatement insertMeta;
+	protected PreparedStatement insertCVE;
+	protected PreparedStatement fetchRecordId;
+	protected PreparedStatement fetchCVES;
+	protected PreparedStatement deleteRecordHash;
+	protected PreparedStatement deleteRecordId;
+	protected PreparedStatement deleteFileHashes;
+	protected PreparedStatement deleteMeta;
+	protected PreparedStatement deleteCVES;
+	protected PreparedStatement countMatchedFileHash;
+	protected PreparedStatement countFileHashes;
+	protected PreparedStatement matchProperty;
 
 	PreparedStatement[] cascadeDeleteOnId;
 
@@ -84,6 +86,8 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				.prepareStatement(Query.FILEHASH_MATCHES_PER_RECORD);
 		countFileHashes = connection
 				.prepareStatement(Query.FILEHASH_COUNT_PER_RECORD);
+
+		matchProperty = connection.prepareStatement(Query.PROPERTY_MATCH);
 	}
 
 	protected void connect(String dbUrl, boolean init) throws SQLException {
@@ -267,10 +271,10 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		return cves;
 	}
 
-	public ArrayList<String> getVulnerabilities(String sha512)
+	public HashSet<String> getVulnerabilities(String sha512)
 			throws VictimsException {
 		try {
-			ArrayList<String> cves = new ArrayList<String>();
+			HashSet<String> cves = new HashSet<String>();
 			fetchRecordId.setString(1, sha512);
 			ResultSet rs = fetchRecordId.executeQuery();
 			while (rs.next()) {
@@ -282,12 +286,47 @@ public class VictimsSqlDB implements VictimsDBInterface {
 					"Could not determine vulnerabilities for hash: " + sha512,
 					e);
 		}
+	}
+
+	public HashSet<String> getVulnerabilities(HashMap<String, String> props)
+			throws VictimsException {
+		try {
+			HashSet<String> cves = new HashSet<String>();
+
+			int requiredMinCount = props.size();
+			HashMap<Integer, MutableInteger> matchedPropCount =
+					new HashMap<Integer, MutableInteger>();
+
+			ResultSet rs;
+			for (String key : props.keySet()) {
+				String value = props.get(key);
+				matchProperty.setString(1, key);
+				matchProperty.setString(2, value);
+				// TODO: Look at batching this
+				rs = matchProperty.executeQuery();
+				while (rs.next()) {
+					Integer id = rs.getInt("record");
+					if (!matchedPropCount.containsKey(id)) {
+						matchedPropCount.put(id, new MutableInteger());
+					} else {
+						MutableInteger count = matchedPropCount.get(id);
+						count.increment();
+						if (count.get() == requiredMinCount) {
+							cves.addAll(getVulnerabilities(id));
+						}
+					}
+				}
+			}
+			return cves;
+		} catch (SQLException e) {
+			throw new VictimsException("Failed to search on properties", e);
+		}
 
 	}
 
-	public ArrayList<String> getEmbeddedVulnerabilities(VictimsRecord vr)
+	public HashSet<String> getEmbeddedVulnerabilities(VictimsRecord vr)
 			throws SQLException {
-		ArrayList<String> cves = new ArrayList<String>();
+		HashSet<String> cves = new HashSet<String>();
 		HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
 
 		/*
@@ -343,12 +382,14 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		return cves;
 	}
 
-	public ArrayList<String> getVulnerabilities(VictimsRecord vr)
+	public HashSet<String> getVulnerabilities(VictimsRecord vr)
 			throws VictimsException {
 		try {
-			ArrayList<String> cves = new ArrayList<String>();
+			HashSet<String> cves = new HashSet<String>();
 			// Match jar sha512
 			cves.addAll(getVulnerabilities(vr.hash.trim()));
+			// Match on properties
+			cves.addAll(getVulnerabilities(vr.getFlattenedMetaData()));
 			// Match any embedded filehashes
 			cves.addAll(getEmbeddedVulnerabilities(vr));
 			return cves;
@@ -407,5 +448,22 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				+ "WHERE filehash IN (?) " + "GROUP BY record";
 		protected final static String FILEHASH_COUNT_PER_RECORD = 
 				"SELECT record, count(*) FROM filehashes GROUP BY record";
+		protected final static String PROPERTY_MATCH =
+				"SELECT record FROM meta WHERE key = ? AND value = ?";
+	}
+
+	protected static class MutableInteger {
+		/*
+		 * http://stackoverflow.com/questions/81346
+		 */
+		int value = 1; // note that we start at 1 since we're counting
+
+		public void increment() {
+			++value;
+		}
+
+		public int get() {
+			return value;
+		}
 	}
 }

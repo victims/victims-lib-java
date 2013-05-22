@@ -1,7 +1,7 @@
 package com.redhat.victims.database;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 
 import com.redhat.victims.VictimsException;
 import com.redhat.victims.VictimsRecord;
@@ -33,7 +33,7 @@ public interface VictimsDBInterface {
 	 * @return
 	 * @throws VictimsException
 	 */
-	public ArrayList<String> getVulnerabilities(VictimsRecord vr)
+	public HashSet<String> getVulnerabilities(VictimsRecord vr)
 			throws VictimsException;
 
 	/**
@@ -42,7 +42,19 @@ public interface VictimsDBInterface {
 	 * @return
 	 * @throws VictimsException
 	 */
-	public ArrayList<String> getVulnerabilities(String sha512)
+	public HashSet<String> getVulnerabilities(String sha512)
+			throws VictimsException;
+
+	/**
+	 * For a given set of properties match all CVEs that match.
+	 * 
+	 * @param props
+	 *            A set of key/value pairs representing all meta properties to
+	 *            be matched.
+	 * @return
+	 * @throws VictimsException
+	 */
+	public HashSet<String> getVulnerabilities(HashMap<String, String> props)
 			throws VictimsException;
 
 }
