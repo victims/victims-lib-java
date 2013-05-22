@@ -11,6 +11,7 @@ public class MockEnvironment {
 	private static String TEST_CACHE = "victims.test.cache";
 
 	public static void setUp() throws IOException {
+		deleteCache();
 		MockService.start();
 		System.setProperty(VictimsConfig.Key.DB_FORCE_UPDATE, "true");
 		System.setProperty(VictimsConfig.Key.URI, MockService.uri());
@@ -22,7 +23,10 @@ public class MockEnvironment {
 		System.clearProperty(VictimsConfig.Key.DB_FORCE_UPDATE);
 		System.clearProperty(VictimsConfig.Key.URI);
 		System.clearProperty(VictimsConfig.Key.CACHE);
-		
+		deleteCache();
+	}
+
+	public static void deleteCache() {
 		try {
 			FileUtils.deleteDirectory(new File(TEST_CACHE));
 		} catch (IOException e) {
