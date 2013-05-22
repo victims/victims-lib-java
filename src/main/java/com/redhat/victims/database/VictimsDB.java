@@ -15,6 +15,14 @@ import com.redhat.victims.VictimsException;
  */
 public class VictimsDB {
 
+	public static String defaultDriver() {
+		return VictimsH2DB.driver();
+	}
+
+	public static String defaultURL() {
+		return VictimsH2DB.defaultURL();
+	}
+
 	/**
 	 * Fetches an instance implementing {@link VictimsDBInterface} using the
 	 * configured driver.

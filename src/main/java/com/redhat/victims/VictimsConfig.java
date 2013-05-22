@@ -31,7 +31,7 @@ import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import com.redhat.victims.database.VictimsH2DB;
+import com.redhat.victims.database.VictimsDB;
 
 /**
  * This class provides system property keys and default values for all available
@@ -49,7 +49,7 @@ public class VictimsConfig {
 		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
 		DEFAULT_PROPS.put(Key.CACHE, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
-		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsH2DB.DRIVER_CLASS);
+		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsDB.defaultDriver());
 		DEFAULT_PROPS.put(Key.DB_USER, "victims");
 		DEFAULT_PROPS.put(Key.DB_PASS, "victims");
 	}
@@ -144,7 +144,7 @@ public class VictimsConfig {
 	public static String dbUrl() {
 		String dbUrl = getPropertyValue(Key.DB_URL);
 		if (dbUrl == null) {
-			dbUrl = VictimsH2DB.defaultURL();
+			dbUrl = VictimsDB.defaultURL();
 		}
 		return dbUrl;
 	}

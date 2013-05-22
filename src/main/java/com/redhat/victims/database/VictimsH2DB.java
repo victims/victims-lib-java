@@ -17,12 +17,15 @@ import com.redhat.victims.VictimsConfig.Key;
  */
 public class VictimsH2DB extends VictimsSqlDB {
 
-	public static final String DRIVER_CLASS = "org.h2.Driver";
+	protected static final String DRIVER_CLASS = "org.h2.Driver";
+
+	public static String driver() {
+		return DRIVER_CLASS;
+	}
 
 	public VictimsH2DB() throws ClassNotFoundException, IOException,
 			SQLException {
-		super(VictimsConfig.dbDriver(), VictimsConfig.dbUrl(), VictimsConfig
-				.dbCreate());
+		super(driver(), VictimsConfig.dbUrl(), VictimsConfig.dbCreate());
 	}
 
 	public static String defaultURL() {
