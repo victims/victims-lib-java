@@ -11,7 +11,6 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,12 +25,21 @@ import com.redhat.victims.VictimsService;
 import com.redhat.victims.VictimsService.RecordStream;
 import com.redhat.victims.fingerprint.Algorithms;
 
+/**
+ * This class implements {@link VictimsDBInterface} for SQL databases.
+ * 
+ * @author abn
+ * 
+ */
 public class VictimsSqlDB implements VictimsDBInterface {
+	// The default file for storing the last sync'ed {@link Date}
 	protected static final String UPDATE_FILE_NAME = "lastUpdate";
 	protected File lastUpdate;
 
 	protected String cache;
 	protected Connection connection;
+
+	// Stores a cache of the content (filehash) count per record
 	protected HashMap<Integer, Integer> cachedCount;
 
 	// Prepared statements used
@@ -50,8 +58,15 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	protected PreparedStatement countFileHashes;
 	protected PreparedStatement matchProperty;
 
+	// The set of prepared statements that need to be executed to delete a
+	// record. This is to work around h2 jdbc ON DELETE CASCADE issues.
 	protected PreparedStatement[] cascadeDeleteOnId;
 
+	/**
+	 * Initializes a database by created required tables.
+	 * 
+	 * @throws SQLException
+	 */
 	protected void createDB() throws SQLException {
 		Statement stmt = this.connection.createStatement();
 		stmt.execute(Query.CREATE_TABLE_RECORDS);
@@ -60,6 +75,11 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		stmt.execute(Query.CREATE_TABLE_CVES);
 	}
 
+	/**
+	 * Sets up all prepared statements for use with the connection.
+	 * 
+	 * @throws SQLException
+	 */
 	protected void prepareStatements() throws SQLException {
 		insertRecord = connection.prepareStatement(Query.INSERT_RECORD);
 		insertFileHash = connection.prepareStatement(Query.INSERT_FILEHASH);
@@ -86,16 +106,36 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		matchProperty = connection.prepareStatement(Query.PROPERTY_MATCH);
 	}
 
+	/**
+	 * Connect to an SQL database.
+	 * 
+	 * @param dbUrl
+	 *            The connection string to use. This is without username and
+	 *            pass
+	 * @param create
+	 *            Does the datase have to be initialized?
+	 * @throws SQLException
+	 */
 	protected void connect(String dbUrl, boolean create) throws SQLException {
 		this.connection = DriverManager.getConnection(dbUrl,
 				VictimsConfig.dbUser(), VictimsConfig.dbPass());
 		if (create) {
+			// we are new in town, initialize the database.
 			createDB();
 		}
 		prepareStatements();
+
+		// this is to enable savepoints while synchronizing
 		this.connection.setAutoCommit(false);
 	}
 
+	/**
+	 * Create an instance for a given driver class.
+	 * 
+	 * @param driver
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public VictimsSqlDB(String driver) throws IOException,
 			ClassNotFoundException {
 		this.cache = VictimsConfig.cache().toString();
@@ -103,12 +143,32 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		Class.forName(driver);
 	}
 
+	/**
+	 * Create a new instance with the given parameters.
+	 * 
+	 * @param driver
+	 *            The driver class to use.
+	 * @param dbUrl
+	 *            The connection string without username and password.
+	 * @param create
+	 *            Are we creating this database? If so initialize.
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public VictimsSqlDB(String driver, String dbUrl, boolean create)
 			throws IOException, ClassNotFoundException, SQLException {
 		this(driver);
 		connect(dbUrl, create);
 	}
 
+	/**
+	 * Given a hahsh get the first occurance's record id.
+	 * 
+	 * @param hash
+	 * @return
+	 * @throws SQLException
+	 */
 	protected int getRecordId(String hash) throws SQLException {
 		fetchRecordId.setString(1, hash);
 		ResultSet rs = fetchRecordId.executeQuery();
@@ -118,6 +178,13 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		return -1;
 	}
 
+	/**
+	 * Insert a new record with the given hash and return the record id.
+	 * 
+	 * @param hash
+	 * @return A record id if it was created correctly, else return -1.
+	 * @throws SQLException
+	 */
 	protected int addRecord(String hash) throws SQLException {
 		insertRecord.setString(1, hash);
 		insertRecord.execute();
@@ -129,6 +196,13 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		return -1;
 	}
 
+	/**
+	 * Remove records matching a given hash. This will cascade to all
+	 * references.
+	 * 
+	 * @param hash
+	 * @throws SQLException
+	 */
 	protected void removeRecord(String hash) throws SQLException {
 		int id = getRecordId(hash);
 		if (id > 0) {
@@ -139,20 +213,40 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		}
 	}
 
-	protected void remove(RecordStream rs) throws SQLException, IOException {
-		while (rs.hasNext()) {
-			VictimsRecord vr = rs.getNext();
+	/**
+	 * Remove all records matching the records in the given {@link RecordStream}
+	 * if it exists.
+	 * 
+	 * @param recordStream
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	protected void remove(RecordStream recordStream) throws SQLException,
+			IOException {
+		while (recordStream.hasNext()) {
+			VictimsRecord vr = recordStream.getNext();
 			deleteRecordHash.setString(1, vr.hash);
 		}
 		deleteRecordHash.executeBatch();
 	}
 
-	protected void update(RecordStream rs) throws SQLException, IOException {
+	/**
+	 * Update all records in the given {@link RecordStream}. This will remove
+	 * the record if it already exits and then add it. Otherwise, it just adds
+	 * it.
+	 * 
+	 * @param recordStream
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	protected void update(RecordStream recordStream) throws SQLException,
+			IOException {
 
-		while (rs.hasNext()) {
-			VictimsRecord vr = rs.getNext();
+		while (recordStream.hasNext()) {
+			VictimsRecord vr = recordStream.getNext();
 			String hash = vr.hash.trim();
 
+			// remove if already present
 			removeRecord(hash);
 
 			// add the new/updated hash
@@ -188,6 +282,14 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		insertCVE.executeBatch();
 	}
 
+	/**
+	 * Sets the last updated date. Once done, next call to lastUpdated() method
+	 * will return this date.
+	 * 
+	 * @param date
+	 *            The date to set.
+	 * @throws IOException
+	 */
 	protected void setLastUpdate(Date date) throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
 		String stamp = sdf.format(date);
@@ -200,6 +302,8 @@ public class VictimsSqlDB implements VictimsDBInterface {
 			SimpleDateFormat sdf = new SimpleDateFormat(
 					VictimsRecord.DATE_FORMAT);
 			Date since;
+
+			// The default start
 			since = sdf.parse("1970-01-01T00:00:00");
 
 			if (VictimsConfig.forcedUpdate()) {
@@ -257,9 +361,16 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		throw new VictimsException("Failed to sync database", throwable);
 	}
 
-	protected ArrayList<String> getVulnerabilities(int recordId)
+	/**
+	 * Returns CVEs that are ascociated with a given record id.
+	 * 
+	 * @param recordId
+	 * @return
+	 * @throws SQLException
+	 */
+	protected HashSet<String> getVulnerabilities(int recordId)
 			throws SQLException {
-		ArrayList<String> cves = new ArrayList<String>();
+		HashSet<String> cves = new HashSet<String>();
 		fetchCVES.setInt(1, recordId);
 		ResultSet matches = fetchCVES.executeQuery();
 		while (matches.next()) {
@@ -291,8 +402,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 			HashSet<String> cves = new HashSet<String>();
 
 			int requiredMinCount = props.size();
-			HashMap<Integer, MutableInteger> matchedPropCount =
-					new HashMap<Integer, MutableInteger>();
+			HashMap<Integer, MutableInteger> matchedPropCount = new HashMap<Integer, MutableInteger>();
 
 			ResultSet rs;
 			for (String key : props.keySet()) {
@@ -321,7 +431,16 @@ public class VictimsSqlDB implements VictimsDBInterface {
 
 	}
 
-	public HashSet<String> getEmbeddedVulnerabilities(VictimsRecord vr)
+	/**
+	 * Internal method implementing search for vulnerabilities checking if the
+	 * given {@link VictimsRecord}'s contents are a superset of a record in the
+	 * victims database.
+	 * 
+	 * @param vr
+	 * @return
+	 * @throws SQLException
+	 */
+	protected HashSet<String> getEmbeddedVulnerabilities(VictimsRecord vr)
 			throws SQLException {
 		HashSet<String> cves = new HashSet<String>();
 		HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
@@ -395,7 +514,13 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		}
 	}
 
-	public static class Query {
+	/**
+	 * This class defines SQL queries that are available.
+	 * 
+	 * @author abn
+	 * 
+	 */
+	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "
 				+ "id BIGINT AUTO_INCREMENT, " + "hash VARCHAR(128)" + ")";
 		protected final static String CREATE_TABLE_FILEHASHES = "CREATE TABLE filehashes ("
@@ -447,6 +572,12 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				"SELECT record FROM meta WHERE key = ? AND value = ?";
 	}
 
+	/**
+	 * This class is used internally to store counts.
+	 * 
+	 * @author abn
+	 * 
+	 */
 	protected static class MutableInteger {
 		/*
 		 * http://stackoverflow.com/questions/81346

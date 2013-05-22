@@ -185,6 +185,13 @@ public class VictimsConfig {
 		return Boolean.getBoolean(Key.DB_FORCE_UPDATE);
 	}
 
+	/**
+	 * This class contains system property keys that are used to configure
+	 * victims.
+	 * 
+	 * @author abn
+	 * 
+	 */
 	public static class Key {
 		public static final String URI = "victims.service.uri";
 		public static final String ENTRY = "victims.service.entry";
