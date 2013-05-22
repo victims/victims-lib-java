@@ -64,9 +64,9 @@ public class VictimsDatabaseTest {
 		VictimsRecord vr;
 		while (rs.hasNext()) {
 			vr = rs.getNext();
-			HashSet<String> cves = getVulnerabilities(vr);
-			vr.hash = "0";
 			if (vr.getHashes(Algorithms.SHA512).size() > 0) {
+				HashSet<String> cves = getVulnerabilities(vr);
+				vr.hash = "0";
 				HashSet<String> result = getVulnerabilities(vr);
 				assertEquals("Unexpected number of CVEs", cves.size(),
 						result.size());
