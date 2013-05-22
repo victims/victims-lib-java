@@ -31,6 +31,8 @@ import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+import com.redhat.victims.database.VictimsH2DB;
+
 /**
  * This class provides system property keys and default values for all available
  * Victims configurations.
@@ -47,7 +49,9 @@ public class VictimsConfig {
 		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
 		DEFAULT_PROPS.put(Key.CACHE, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
-		DEFAULT_PROPS.put(Key.DB_DRIVER, "org.h2.Driver");
+		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsH2DB.DRIVER_CLASS);
+		DEFAULT_PROPS.put(Key.DB_USER, "victims");
+		DEFAULT_PROPS.put(Key.DB_PASS, "victims");
 	}
 
 	/**
@@ -55,8 +59,8 @@ public class VictimsConfig {
 	 * 
 	 * @param key
 	 * @return If configured, return the system property value, else return a
-	 *         default. If a default is also not available, returns an empty
-	 *         {@link String}.
+	 *         default. If a default is also not available, returns
+	 *         <code>null</code> if no default is configured.
 	 */
 	private static String getPropertyValue(String key) {
 		String env = System.getProperty(key);
@@ -64,7 +68,7 @@ public class VictimsConfig {
 			if (DEFAULT_PROPS.containsKey(key)) {
 				return DEFAULT_PROPS.get(key);
 			} else {
-				return "";
+				return null;
 			}
 		}
 		return env;
@@ -133,6 +137,46 @@ public class VictimsConfig {
 	}
 
 	/**
+	 * Get the db connection URL.
+	 * 
+	 * @return
+	 */
+	public static String dbUrl() {
+		String dbUrl = getPropertyValue(Key.DB_URL);
+		if (dbUrl == null) {
+			dbUrl = VictimsH2DB.defaultURL();
+		}
+		return dbUrl;
+	}
+
+	/**
+	 * Should the database be created? Useful only for internal h2 db.
+	 * 
+	 * @return
+	 */
+	public static boolean dbCreate() {
+		return Boolean.getBoolean(Key.DB_CREATE);
+	}
+
+	/**
+	 * Get the database user configured.
+	 * 
+	 * @return
+	 */
+	public static String dbUser() {
+		return getPropertyValue(Key.DB_USER);
+	}
+
+	/**
+	 * Get the database password configured.
+	 * 
+	 * @return
+	 */
+	public static String dbPass() {
+		return getPropertyValue(Key.DB_PASS);
+	}
+
+	/**
 	 * Is a force database update required.
 	 * 
 	 * @return
@@ -147,6 +191,10 @@ public class VictimsConfig {
 		public static final String ENCODING = "victims.encoding";
 		public static final String CACHE = "victims.cache";
 		public static final String DB_DRIVER = "victims.db.driver";
+		public static final String DB_URL = "victims.db.url";
+		public static final String DB_CREATE = "victims.db.create";
+		public static final String DB_USER = "victims.db.user";
+		public static final String DB_PASS = "victims.db.pass";
 		public static final String DB_FORCE_UPDATE = "victims.db.force";
 	}
 

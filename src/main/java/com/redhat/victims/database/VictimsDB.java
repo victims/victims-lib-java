@@ -1,6 +1,7 @@
 package com.redhat.victims.database;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.sql.SQLException;
 
 import com.redhat.victims.VictimsConfig;
 import com.redhat.victims.VictimsException;
@@ -13,11 +14,6 @@ import com.redhat.victims.VictimsException;
  * 
  */
 public class VictimsDB {
-	private static final HashMap<String, Class<?>> DRIVER_MAP = new HashMap<String, Class<?>>();
-
-	static {
-		DRIVER_MAP.put("org.h2.Driver", VictimsH2DB.class);
-	}
 
 	/**
 	 * Fetches an instance implementing {@link VictimsDBInterface} using the
@@ -27,22 +23,20 @@ public class VictimsDB {
 	 * @throws VictimsException
 	 */
 	public static VictimsDBInterface db() throws VictimsException {
-		String driver = VictimsConfig.dbDriver();
 		Throwable throwable = null;
-		if (DRIVER_MAP.containsKey(driver)) {
-			try {
-				return (VictimsDBInterface) DRIVER_MAP.get(driver)
-						.newInstance();
-			} catch (InstantiationException e) {
-				throwable = e;
-			} catch (IllegalAccessException e) {
-				throwable = e;
-			}
-		} else {
-			throw new VictimsException(String.format("Invalid database driver (%s) configured.",
-					driver));
+		try {
+			return (VictimsDBInterface) new VictimsSqlDB(
+					VictimsConfig.dbDriver(), VictimsConfig.dbUrl(),
+					VictimsConfig.dbCreate());
+		} catch (SQLException e) {
+			throwable = e;
+		} catch (ClassNotFoundException e) {
+			throwable = e;
+		} catch (IOException e) {
+			throwable = e;
 		}
-		throw new VictimsException("Failed to get a Victims Database instance.", throwable);
+		throw new VictimsException(
+				"Failed to get a Victims Database instance.", throwable);
 	}
 
 }

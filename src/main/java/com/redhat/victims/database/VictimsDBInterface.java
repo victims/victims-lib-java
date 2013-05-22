@@ -1,6 +1,7 @@
 package com.redhat.victims.database;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import com.redhat.victims.VictimsException;

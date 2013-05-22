@@ -6,6 +6,9 @@ import java.sql.SQLException;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.redhat.victims.VictimsConfig;
+import com.redhat.victims.VictimsConfig.Key;
+
 /**
  * An H2 DB implementation for {@link VictimsDBInterface}
  * 
@@ -13,14 +16,31 @@ import org.apache.commons.io.FilenameUtils;
  * 
  */
 public class VictimsH2DB extends VictimsSqlDB {
-	protected static final String DB_FILE_NAME = "victims";
+
+	public static final String DRIVER_CLASS = "org.h2.Driver";
 
 	public VictimsH2DB() throws ClassNotFoundException, IOException,
 			SQLException {
-		super("org.h2.Driver");
-		String dbFile = FilenameUtils.concat(cache, DB_FILE_NAME);
-		String dbUrl = String.format("jdbc:h2:%s", dbFile);
-		boolean init = !(new File(dbFile + ".h2.db")).exists();
-		connect(dbUrl, init);
+		super(VictimsConfig.dbDriver(), VictimsConfig.dbUrl(), VictimsConfig
+				.dbCreate());
 	}
+
+	public static String defaultURL() {
+		String cache = "";
+		try {
+			cache = VictimsConfig.cache().toString();
+		} catch (IOException e) {
+			// Ignore and use cwd
+		}
+		String dbFile = FilenameUtils.concat(cache, "victims");
+		String dbUrl = String.format("jdbc:h2:%s", dbFile);
+		if (!(new File(dbFile + ".h2.db")).exists()) {
+			System.setProperty(Key.DB_CREATE, "true");
+		} else {
+			// this is internal so clear it if not required
+			System.clearProperty(Key.DB_CREATE);
+		}
+		return dbUrl;
+	}
+
 }

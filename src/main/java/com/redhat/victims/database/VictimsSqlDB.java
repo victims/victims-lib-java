@@ -34,10 +34,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	protected Connection connection;
 	protected HashMap<Integer, Integer> cachedCount;
 
-	// database credentials
-	protected String user = "victims";
-	protected String password = "victims";
-
 	// Prepared statements used
 	protected PreparedStatement insertRecord;
 	protected PreparedStatement insertFileHash;
@@ -56,7 +52,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 
 	PreparedStatement[] cascadeDeleteOnId;
 
-	protected void initDB() throws SQLException {
+	protected void createDB() throws SQLException {
 		Statement stmt = this.connection.createStatement();
 		stmt.execute(Query.CREATE_TABLE_RECORDS);
 		stmt.execute(Query.CREATE_TABLE_FILEHASHES);
@@ -90,10 +86,11 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		matchProperty = connection.prepareStatement(Query.PROPERTY_MATCH);
 	}
 
-	protected void connect(String dbUrl, boolean init) throws SQLException {
-		this.connection = DriverManager.getConnection(dbUrl, user, password);
-		if (init) {
-			initDB();
+	protected void connect(String dbUrl, boolean create) throws SQLException {
+		this.connection = DriverManager.getConnection(dbUrl,
+				VictimsConfig.dbUser(), VictimsConfig.dbPass());
+		if (create) {
+			createDB();
 		}
 		prepareStatements();
 		this.connection.setAutoCommit(false);
@@ -106,10 +103,10 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		Class.forName(driver);
 	}
 
-	public VictimsSqlDB(String driver, String dbUrl, boolean init)
+	public VictimsSqlDB(String driver, String dbUrl, boolean create)
 			throws IOException, ClassNotFoundException, SQLException {
 		this(driver);
-		connect(dbUrl, init);
+		connect(dbUrl, create);
 	}
 
 	protected int getRecordId(String hash) throws SQLException {
