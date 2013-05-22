@@ -24,7 +24,6 @@ package com.redhat.victims.database;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.h2.jdbcx.JdbcConnectionPool;
 
 import com.redhat.victims.VictimsConfig;
 import com.redhat.victims.VictimsException;
@@ -58,6 +58,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	protected File lastUpdate;
 
 	protected String cache;
+	protected JdbcConnectionPool connectionPool;
 	protected Connection connection;
 
 	// Stores a cache of the content (filehash) count per record
@@ -89,11 +90,13 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	 * @throws SQLException
 	 */
 	protected void createDB() throws SQLException {
-		Statement stmt = this.connection.createStatement();
+		Connection connection = connectionPool.getConnection();
+		Statement stmt = connection.createStatement();
 		stmt.execute(Query.CREATE_TABLE_RECORDS);
 		stmt.execute(Query.CREATE_TABLE_FILEHASHES);
 		stmt.execute(Query.CREATE_TABLE_META);
 		stmt.execute(Query.CREATE_TABLE_CVES);
+		connection.close();
 	}
 
 	/**
@@ -102,6 +105,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	 * @throws SQLException
 	 */
 	protected void prepareStatements() throws SQLException {
+		this.connection = connectionPool.getConnection();
 		insertRecord = connection.prepareStatement(Query.INSERT_RECORD);
 		insertFileHash = connection.prepareStatement(Query.INSERT_FILEHASH);
 		insertMeta = connection.prepareStatement(Query.INSERT_META);
@@ -125,6 +129,9 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				.prepareStatement(Query.FILEHASH_COUNT_PER_RECORD);
 
 		matchProperty = connection.prepareStatement(Query.PROPERTY_MATCH);
+
+		// this is to enable savepoints while synchronizing
+		this.connection.setAutoCommit(false);
 	}
 
 	/**
@@ -138,16 +145,13 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	 * @throws SQLException
 	 */
 	protected void connect(String dbUrl, boolean create) throws SQLException {
-		this.connection = DriverManager.getConnection(dbUrl,
+		connectionPool = JdbcConnectionPool.create(dbUrl,
 				VictimsConfig.dbUser(), VictimsConfig.dbPass());
 		if (create) {
 			// we are new in town, initialize the database.
 			createDB();
 		}
 		prepareStatements();
-
-		// this is to enable savepoints while synchronizing
-		this.connection.setAutoCommit(false);
 	}
 
 	/**
@@ -261,7 +265,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	 */
 	protected void update(RecordStream recordStream) throws SQLException,
 			IOException {
-
 		while (recordStream.hasNext()) {
 			VictimsRecord vr = recordStream.getNext();
 			String hash = vr.hash.trim();
@@ -294,7 +297,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				insertCVE.setString(2, cve.trim());
 				insertCVE.addBatch();
 			}
-
 		}
 
 		insertFileHash.executeBatch();
@@ -352,7 +354,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		Throwable throwable = null;
 		try {
 			Savepoint savepoint = this.connection.setSavepoint();
-
 			try {
 				VictimsService service = new VictimsService();
 				Date since = lastUpdated();
@@ -361,8 +362,8 @@ public class VictimsSqlDB implements VictimsDBInterface {
 				update(service.updates(since));
 
 				setLastUpdate(new Date());
-				this.connection.releaseSavepoint(savepoint);
-				this.connection.commit();
+				// this.connection.releaseSavepoint(savepoint);
+				// this.connection.commit();
 
 				// reset cache
 				cachedCount = null;
@@ -471,8 +472,8 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		 * This is done by hand now instead.
 		 * 
 		 * countMatchedFileHash.setObject(1,
-		 * vr.getHashes(Algorithms.SHA512).keySet().toArray());
-		 * rs = countMatchedFileHash.executeQuery();
+		 * vr.getHashes(Algorithms.SHA512).keySet().toArray()); rs =
+		 * countMatchedFileHash.executeQuery();
 		 */
 		Set<String> hashes = vr.getHashes(Algorithms.SHA512).keySet();
 
@@ -490,7 +491,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		contents = contents.substring(0, contents.length() - 3);
 
 		sql = String.format(sql, contents);
-		Statement stmt = connection.createStatement();
+		Statement stmt = connectionPool.getConnection().createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
 
 		while (rs.next()) {
