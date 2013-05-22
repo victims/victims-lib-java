@@ -57,7 +57,7 @@ public class VictimsH2DB extends VictimsSqlDB {
 			// Ignore and use cwd
 		}
 		String dbFile = FilenameUtils.concat(cache, "victims");
-		String dbUrl = String.format("jdbc:h2:%s", dbFile);
+		String dbUrl = String.format("jdbc:h2:%s;MVCC=true", dbFile);
 		if (!(new File(dbFile + ".h2.db")).exists()) {
 			System.setProperty(Key.DB_CREATE, "true");
 		} else {
