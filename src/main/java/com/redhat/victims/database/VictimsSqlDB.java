@@ -50,7 +50,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 	protected PreparedStatement countFileHashes;
 	protected PreparedStatement matchProperty;
 
-	PreparedStatement[] cascadeDeleteOnId;
+	protected PreparedStatement[] cascadeDeleteOnId;
 
 	protected void createDB() throws SQLException {
 		Statement stmt = this.connection.createStatement();
