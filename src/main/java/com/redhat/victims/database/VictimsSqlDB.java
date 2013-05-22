@@ -211,7 +211,6 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		insertRecord.execute();
 		ResultSet rs = insertRecord.getGeneratedKeys();
 		while (rs.next()) {
-			System.out.println(hash + " : " + rs.getInt(1));
 			return rs.getInt(1);
 		}
 		return -1;
@@ -367,6 +366,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 
 				// reset cache
 				cachedCount = null;
+				return;
 			} catch (IOException e) {
 				throwable = e;
 			} catch (SQLException e) {
@@ -472,8 +472,7 @@ public class VictimsSqlDB implements VictimsDBInterface {
 		 * 
 		 * countMatchedFileHash.setObject(1,
 		 * vr.getHashes(Algorithms.SHA512).keySet().toArray());
-		 * System.out.println(countMatchedFileHash.toString().replace(",",
-		 * "\n")); rs = countMatchedFileHash.executeQuery();
+		 * rs = countMatchedFileHash.executeQuery();
 		 */
 		Set<String> hashes = vr.getHashes(Algorithms.SHA512).keySet();
 
