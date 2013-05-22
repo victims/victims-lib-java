@@ -15,10 +15,20 @@ import com.redhat.victims.VictimsException;
  */
 public class VictimsDB {
 
+	/**
+	 * The default driver class to use.
+	 * 
+	 * @return
+	 */
 	public static String defaultDriver() {
 		return VictimsH2DB.driver();
 	}
 
+	/**
+	 * The default url for the default driver.
+	 * 
+	 * @return
+	 */
 	public static String defaultURL() {
 		return VictimsH2DB.defaultURL();
 	}
