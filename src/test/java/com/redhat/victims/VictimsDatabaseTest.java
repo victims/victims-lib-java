@@ -10,7 +10,6 @@ import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,11 +24,12 @@ public class VictimsDatabaseTest {
 	private static final String TEST_SHA512 = "testdata/service/test.sha512";
 	private static final String TEST_CVE = "testdata/service/test.cve";
 
-	private VictimsDBInterface vdb;
+	private static VictimsDBInterface vdb;
 
 	@BeforeClass
-	public static void setUp() throws IOException {
+	public static void setUp() throws IOException, VictimsException {
 		MockEnvironment.setUp();
+		sync();
 	}
 
 	@AfterClass
@@ -37,8 +37,7 @@ public class VictimsDatabaseTest {
 		MockEnvironment.tearDown();
 	}
 
-	@Before
-	public void setVDB() throws VictimsException {
+	public static void sync() throws VictimsException {
 		vdb = VictimsDB.db();
 		vdb.synchronize();
 	}
