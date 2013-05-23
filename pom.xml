@@ -102,9 +102,10 @@
 					<descriptionTemplate>${basedir}/src/license/header.ftl</descriptionTemplate>
 					<verbose>false</verbose>
 					<licenseName>agpl_v3</licenseName>
-					<roots>
-						<root>src/main</root>
-					</roots>
+					<includes>
+						<include>**/main/**/*</include>
+						<include>**/test/**/mock/*</include>
+					</includes>
 				</configuration>
 			</plugin>
 			<plugin>
