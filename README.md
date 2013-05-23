@@ -16,7 +16,7 @@ Update your _pom.xml_ dependencies.
 <dependency>
   <groupId>com.redhat.victims</groupId>
   <artifactId>victims-lib</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 </dependency>
 ```
 ### Gradle
@@ -49,3 +49,22 @@ To run only offlinetests:
 ```sh
 mvn test -Dtest=OfflineTests
 ```
+## Releases
+This is an abridged version of the guide available at https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+#### SNAPSHOT Release
+```sh
+mvn clean deploy
+```
+#### Staging
+```sh
+mvn clean deploy
+mvn release:clean
+mvn release:prepare
+mvn release:perform
+```
+#### Promoting to central
+1. Login at https://oss.sonatype.org/
+2. [Go to staging repositories](https://oss.sonatype.org/index.html#stagingRepositories)
+3. Select the staging repository
+4. Click on the _Close_ button
+5. Once closed, click on the _Release_ button.
