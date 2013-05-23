@@ -201,8 +201,9 @@ public class VictimsSqlManager {
 	 * @return
 	 */
 	protected String constructInStringsQuery(String query, Set<String> values) {
-		assert query.contains("IN (?)");
-		String sql = query.replaceFirst("IN (?)", "IN (%s)");
+		String replace = "IN (?)";
+		assert query.lastIndexOf(replace) == query.indexOf(replace);
+		String sql = query.replace("IN (?)", "IN (%s)");
 
 		StringBuffer list = new StringBuffer();
 		for (String value : values) {
