@@ -28,7 +28,8 @@ public class VictimsDatabaseTest {
 
 	@BeforeClass
 	public static void setUp() throws IOException, VictimsException {
-		MockEnvironment.setUp();
+		File updateResponse = new File(TEST_RESPONSE);
+		MockEnvironment.setUp(updateResponse, null);
 		sync();
 	}
 

@@ -16,15 +16,19 @@ import com.sun.net.httpserver.HttpExchange;
 @SuppressWarnings("restriction")
 public class MockService {
 	private static Integer PORT = 1337;
-	private static String MOCK_RESPONSE_FILE = "testdata/service/test.response";
+	private static String DEFAULT_RESPONSE = "[]";
 	private static HttpServer httpd;
 	private static boolean running = false;
 
-	public static void start() throws IOException {
+	public static void start(final File updateResponse,
+			final File removeResponse) throws IOException {
 		if (!running) {
 			httpd = HttpServer.create(new InetSocketAddress(PORT), 0);
-			HttpHandler update = new GetHandler(new File(MOCK_RESPONSE_FILE));
-			HttpHandler remove = new GetHandler("[]");
+			HttpHandler empty = new GetHandler(DEFAULT_RESPONSE);
+			HttpHandler update = updateResponse != null ? new GetHandler(
+					updateResponse) : empty;
+			HttpHandler remove = removeResponse != null ? new GetHandler(
+					removeResponse) : empty;
 			httpd.createContext("/service/update/", update);
 			httpd.createContext("/service/remove/", remove);
 			httpd.start();
