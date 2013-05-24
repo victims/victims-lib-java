@@ -1,9 +1,9 @@
 package com.redhat.victims;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.After;
@@ -36,11 +36,11 @@ public class VictimsServiceTest {
 
 	@Test
 	public void testUpdates() throws Exception {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		Date start = sdf.parse("01/01/2010");
+		Date start = new Date();
 		try {
 			RecordStream rs = new VictimsService().updates(start);
 			while (rs.hasNext()) {
+				// if there was a response, test it
 				try {
 					VictimsRecord vr = rs.getNext();
 					try {
@@ -53,6 +53,7 @@ public class VictimsServiceTest {
 				}
 				break;
 			}
+			// we managed to make a valid response, get a valid response.
 		} catch (IOException e) {
 			// Allow this test to succeed if there was an exception in
 			// communicating with the server.
