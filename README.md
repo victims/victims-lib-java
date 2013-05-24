@@ -9,6 +9,10 @@ Fingerprint:
 ```
 47DB 2877 89B2 1722 B6D9 5DDE 5326 8101 3701 7186
 ```
+### Artifacts
+* *Snapshots*: https://oss.sonatype.org/content/repositories/snapshots/com/redhat/victims/victims-lib/
+* *Releases*: http://central.maven.org/maven2/com/redhat/victims/victims-lib/
+
 ## Using in your project
 ### Maven
 Update your _pom.xml_ dependencies.
