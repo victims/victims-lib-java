@@ -20,14 +20,14 @@ Update your _pom.xml_ dependencies.
 <dependency>
   <groupId>com.redhat.victims</groupId>
   <artifactId>victims-lib</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 </dependency>
 ```
 ### Gradle
 Update your _build.gradle_ dependencies.
 ```groovy
 dependencies {
-    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.1'
+    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.2'
 }
 ```
 ## Building from source
@@ -60,7 +60,7 @@ You might want to use a dummy sservice to test your implementation. This is avai
   <groupId>com.redhat.victims</groupId>
   <artifactId>victims-lib</artifactId>
   <type>test-jar</type>
-  <version>1.1</version>
+  <version>1.2</version>
   <scope>test</scope>
 </dependency>
 ```
