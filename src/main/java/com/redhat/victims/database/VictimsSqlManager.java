@@ -38,17 +38,17 @@ import com.redhat.victims.VictimsConfig;
 
 public class VictimsSqlManager {
 	// A global connection pool shared with all instances of this class
-	protected static JdbcConnectionPool pool = null;
+	private static JdbcConnectionPool pool = null;
 
 	// PreparedStatement cache
-	protected HashMap<String, PreparedStatement> statements = 
+	private HashMap<String, PreparedStatement> statements =
 			new HashMap<String, PreparedStatement>();
 
 	// Global connection for this isntance
-	protected Connection connection = null;
+	private Connection connection = null;
 
 	// Queue for pending batch operations
-	protected HashSet<String> batchQueue = new HashSet<String>();
+	private HashSet<String> batchQueue = new HashSet<String>();
 
 	/**
 	 * This retrieves a {@link PreparedStatement} instance corresponding to a
