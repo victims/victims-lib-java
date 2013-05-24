@@ -23,7 +23,7 @@ Update your _pom.xml_ dependencies.
 Update your _build.gradle_ dependencies.
 ```groovy
 dependencies {
-    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.0'
+    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.1'
 }
 ```
 ## Building from source
