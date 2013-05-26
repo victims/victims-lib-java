@@ -5,3 +5,8 @@
 *.war
 *.ear
 /victims-lib/target/
+
+# Eclipse Files #
+.classpath
+.project
+.settings/
