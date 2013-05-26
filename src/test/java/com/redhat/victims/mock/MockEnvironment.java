@@ -31,7 +31,8 @@ import com.redhat.victims.VictimsConfig;
 public class MockEnvironment {
 	private static String TEST_CACHE = "victims.test.cache";
 
-	public static void setUp(File updateResponse, File removeResponse) throws IOException {
+	public static void setUp(File updateResponse, File removeResponse)
+			throws IOException {
 		deleteCache();
 		MockService.start(updateResponse, removeResponse);
 		System.setProperty(VictimsConfig.Key.DB_FORCE_UPDATE, "true");
@@ -48,10 +49,8 @@ public class MockEnvironment {
 	}
 
 	public static void deleteCache() {
-		try {
-			FileUtils.deleteDirectory(new File(TEST_CACHE));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		File testCache = new File(TEST_CACHE);
+		FileUtils.deleteQuietly(testCache);
+
 	}
 }
