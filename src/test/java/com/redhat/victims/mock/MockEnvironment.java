@@ -29,15 +29,17 @@ import org.apache.commons.io.FileUtils;
 import com.redhat.victims.VictimsConfig;
 
 public class MockEnvironment {
-	private static String TEST_CACHE = "victims.test.cache";
+	private static String CACHE_PREFIX = "victims.test.cache";
+	private static File TEMP_CACHE = null;
 
 	public static void setUp(File updateResponse, File removeResponse)
 			throws IOException {
-		deleteCache();
+		initCache();
 		MockService.start(updateResponse, removeResponse);
 		System.setProperty(VictimsConfig.Key.DB_FORCE_UPDATE, "true");
 		System.setProperty(VictimsConfig.Key.URI, MockService.uri());
-		System.setProperty(VictimsConfig.Key.CACHE, TEST_CACHE);
+		System.setProperty(VictimsConfig.Key.CACHE,
+				TEMP_CACHE.getAbsolutePath());
 	}
 
 	public static void tearDown() {
@@ -48,9 +50,18 @@ public class MockEnvironment {
 		deleteCache();
 	}
 
-	public static void deleteCache() {
-		File testCache = new File(TEST_CACHE);
-		FileUtils.deleteQuietly(testCache);
+	public static void initCache() throws IOException {
+		TEMP_CACHE = File.createTempFile(CACHE_PREFIX, "");
+		FileUtils.forceDelete(TEMP_CACHE);
+	}
 
+	public static void deleteCache() {
+		if (TEMP_CACHE.exists()) {
+			try {
+				FileUtils.forceDeleteOnExit(TEMP_CACHE);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
