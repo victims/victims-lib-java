@@ -26,12 +26,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import com.redhat.victims.database.VictimsDB;
+import com.redhat.victims.fingerprint.Algorithms;
 
 /**
  * This class provides system property keys and default values for all available
@@ -49,6 +51,7 @@ public class VictimsConfig {
 		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
 		DEFAULT_PROPS.put(Key.CACHE, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
+		DEFAULT_PROPS.put(Key.ALGORITHMS, "MD5,SHA1,SHA512");
 		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsDB.defaultDriver());
 		DEFAULT_PROPS.put(Key.DB_USER, "victims");
 		DEFAULT_PROPS.put(Key.DB_PASS, "victims");
@@ -128,6 +131,31 @@ public class VictimsConfig {
 	}
 
 	/**
+	 * Returns a list of valid algorithms to be used when fingerprinting. If not
+	 * specified, or if all values are illegal, all available algorithms are
+	 * used.
+	 * 
+	 * @return
+	 */
+	public static ArrayList<Algorithms> algorithms() {
+		ArrayList<Algorithms> algorithms = new ArrayList<Algorithms>();
+		for (String alg : getPropertyValue(Key.ALGORITHMS).split(",")) {
+			alg = alg.trim();
+			try {
+				algorithms.add(Algorithms.valueOf(alg));
+			} catch (Exception e) {
+				// skip
+			}
+		}
+		if (algorithms.size() == 0) {
+			for (Algorithms alg : Algorithms.values()) {
+				algorithms.add(alg);
+			}
+		}
+		return algorithms;
+	}
+
+	/**
 	 * Get the db driver class string in use.
 	 * 
 	 * @return
@@ -197,6 +225,7 @@ public class VictimsConfig {
 		public static final String ENTRY = "victims.service.entry";
 		public static final String ENCODING = "victims.encoding";
 		public static final String CACHE = "victims.cache";
+		public static final String ALGORITHMS = "victims.algorithms";
 		public static final String DB_DRIVER = "victims.db.driver";
 		public static final String DB_URL = "victims.db.url";
 		public static final String DB_CREATE = "victims.db.create";

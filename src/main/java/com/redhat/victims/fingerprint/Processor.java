@@ -33,6 +33,8 @@ import java.util.HashMap;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 
+import com.redhat.victims.VictimsConfig;
+
 /**
  * The Processor acts as an entry point for handling fingerprinting. This class
  * also hadles dynamic processing of files/byte arrays/input streams.
@@ -189,7 +191,7 @@ public class Processor {
 	 */
 	public static Fingerprint fingerprint(byte[] bytes) {
 		Fingerprint fingerprint = new Fingerprint();
-		for (Algorithms algorithm : Algorithms.values()) {
+		for (Algorithms algorithm : VictimsConfig.algorithms()) {
 			try {
 				MessageDigest md = MessageDigest.getInstance(algorithm
 						.toString().toUpperCase());
