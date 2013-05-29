@@ -44,7 +44,7 @@ public class VictimsSqlManager {
 	private HashMap<String, PreparedStatement> statements =
 			new HashMap<String, PreparedStatement>();
 
-	// Global connection for this isntance
+	// Global connection for this instance
 	private Connection connection = null;
 
 	// Queue for pending batch operations
