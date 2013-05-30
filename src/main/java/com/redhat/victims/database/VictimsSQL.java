@@ -16,6 +16,10 @@ import com.redhat.victims.VictimsConfig;
 
 public class VictimsSQL {
 
+	private String dbUrl = null;
+	private String dbUser = null;
+	private String dbPass = null;
+
 	/**
 	 * Get a new connection from the {@link VictimsSqlManager} pool.
 	 * 
@@ -23,8 +27,7 @@ public class VictimsSQL {
 	 * @throws SQLException
 	 */
 	protected Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(VictimsConfig.dbUrl(),
-				VictimsConfig.dbUser(), VictimsConfig.dbPass());
+		return DriverManager.getConnection(dbUrl, dbUser, dbPass);
 	}
 
 	protected boolean isSetUp(Connection connection) throws SQLException {
@@ -60,6 +63,9 @@ public class VictimsSQL {
 	public VictimsSQL() throws IOException, ClassNotFoundException,
 			SQLException {
 		Class.forName(VictimsConfig.dbDriver());
+		dbUrl = VictimsConfig.dbUrl();
+		dbUser = VictimsConfig.dbUser();
+		dbPass = VictimsConfig.dbPass();
 		setUp();
 	}
 
