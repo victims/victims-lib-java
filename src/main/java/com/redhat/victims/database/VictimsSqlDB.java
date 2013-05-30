@@ -117,10 +117,10 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 			String hash = vr.hash.trim();
 
 			// remove if already present
-			deleteRecord(hash);
+			deleteRecord(connection, hash);
 
 			// add the new/updated hash
-			int id = insertRecord(hash);
+			int id = insertRecord(connection, hash);
 
 			// insert file hahes
 			for (String filehash : vr.getHashes(Algorithms.SHA512).keySet()) {

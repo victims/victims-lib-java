@@ -164,26 +164,22 @@ public class VictimsSQL {
 	 * @return A record id if it was created correctly, else return -1.
 	 * @throws SQLException
 	 */
-	protected int insertRecord(String hash) throws SQLException {
+	protected int insertRecord(Connection connection, String hash)
+			throws SQLException {
 		int id = -1;
-		Connection connection = getConnection();
+		PreparedStatement ps = setObjects(connection, Query.INSERT_RECORD, hash);
+		ps.execute();
+		ResultSet rs = ps.getGeneratedKeys();
 		try {
-			PreparedStatement ps = setObjects(connection, Query.INSERT_RECORD,
-					hash);
-			ps.execute();
-			ResultSet rs = ps.getGeneratedKeys();
-			try {
-				while (rs.next()) {
-					id = rs.getInt(1);
-					break;
-				}
-			} finally {
-				rs.close();
-				ps.close();
+			while (rs.next()) {
+				id = rs.getInt(1);
+				break;
 			}
 		} finally {
-			connection.close();
+			rs.close();
+			ps.close();
 		}
+
 		return id;
 	}
 
@@ -194,21 +190,17 @@ public class VictimsSQL {
 	 * @param hash
 	 * @throws SQLException
 	 */
-	protected void deleteRecord(String hash) throws SQLException {
+	protected void deleteRecord(Connection connection, String hash)
+			throws SQLException {
 		int id = selectRecordId(hash);
 		if (id > 0) {
 			String[] queries = new String[] { Query.DELETE_FILEHASHES,
 					Query.DELETE_METAS, Query.DELETE_CVES,
 					Query.DELETE_RECORD_ID };
-			Connection connection = getConnection();
-			try {
-				for (String query : queries) {
-					PreparedStatement ps = setObjects(connection, query, id);
-					ps.execute();
-					ps.close();
-				}
-			} finally {
-				connection.close();
+			for (String query : queries) {
+				PreparedStatement ps = setObjects(connection, query, id);
+				ps.execute();
+				ps.close();
 			}
 		}
 	}
