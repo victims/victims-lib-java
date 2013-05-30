@@ -30,7 +30,7 @@ public class VictimsSQL {
 	protected boolean isSetUp(Connection connection) throws SQLException {
 		boolean result = false;
 		DatabaseMetaData dbm = connection.getMetaData();
-		ResultSet rs = dbm.getTables(null, null, "records", null);
+		ResultSet rs = dbm.getTables(null, null, "RECORDS", null);
 		result = rs.next();
 		rs.close();
 		return result;
@@ -50,6 +50,7 @@ public class VictimsSQL {
 				stmt.execute(Query.CREATE_TABLE_FILEHASHES);
 				stmt.execute(Query.CREATE_TABLE_META);
 				stmt.execute(Query.CREATE_TABLE_CVES);
+				stmt.close();
 			}
 		} finally {
 			connection.close();
