@@ -178,15 +178,6 @@ public class VictimsConfig {
 	}
 
 	/**
-	 * Should the database be created? Useful only for internal h2 db.
-	 * 
-	 * @return
-	 */
-	public static boolean dbCreate() {
-		return Boolean.getBoolean(Key.DB_CREATE);
-	}
-
-	/**
 	 * Get the database user configured.
 	 * 
 	 * @return
@@ -228,7 +219,6 @@ public class VictimsConfig {
 		public static final String ALGORITHMS = "victims.algorithms";
 		public static final String DB_DRIVER = "victims.db.driver";
 		public static final String DB_URL = "victims.db.url";
-		public static final String DB_CREATE = "victims.db.create";
 		public static final String DB_USER = "victims.db.user";
 		public static final String DB_PASS = "victims.db.pass";
 		public static final String DB_FORCE_UPDATE = "victims.db.force";
