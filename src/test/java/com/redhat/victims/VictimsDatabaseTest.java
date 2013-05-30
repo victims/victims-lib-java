@@ -79,4 +79,10 @@ public class VictimsDatabaseTest {
 			}
 		}
 	}
+
+	@Test
+	public void testResync() throws VictimsException {
+		VictimsDBInterface vdb = VictimsDB.db();
+		vdb.synchronize();
+	}
 }
