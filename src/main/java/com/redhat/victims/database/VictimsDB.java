@@ -24,6 +24,9 @@ package com.redhat.victims.database;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.apache.commons.io.FilenameUtils;
+
+import com.redhat.victims.VictimsConfig;
 import com.redhat.victims.VictimsException;
 
 /**
@@ -34,16 +37,13 @@ import com.redhat.victims.VictimsException;
  * 
  */
 public class VictimsDB {
-
-	protected static DatabaseType defaultDB = new VictimsH2();
-
 	/**
 	 * The default driver class to use.
 	 * 
 	 * @return
 	 */
 	public static String defaultDriver() {
-		return defaultDB.driver();
+		return "org.h2.Driver";
 	}
 
 	/**
@@ -52,7 +52,14 @@ public class VictimsDB {
 	 * @return
 	 */
 	public static String defaultURL() {
-		return defaultDB.url();
+		String cache = "";
+		try {
+			cache = VictimsConfig.cache().toString();
+		} catch (IOException e) {
+			// Ignore and use cwd
+		}
+		return String.format("jdbc:h2:%s;MVCC=true",
+				FilenameUtils.concat(cache, "victims"));
 	}
 
 	/**
@@ -63,6 +70,13 @@ public class VictimsDB {
 	 * @throws VictimsException
 	 */
 	public static VictimsDBInterface db() throws VictimsException {
+		if (!VictimsConfig.dbDriver().equals(defaultDriver())
+				&& VictimsConfig.dbUrl().equals(defaultURL())) {
+			// Custom drivers require custom urls
+			throw new VictimsException(
+					"A custome JDBC driver was specified without setting "
+							+ VictimsConfig.Key.DB_URL);
+		}
 		Throwable throwable = null;
 		try {
 			return (VictimsDBInterface) new VictimsSqlDB();
