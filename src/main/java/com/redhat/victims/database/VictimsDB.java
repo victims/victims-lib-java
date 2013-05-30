@@ -24,7 +24,6 @@ package com.redhat.victims.database;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import com.redhat.victims.VictimsConfig;
 import com.redhat.victims.VictimsException;
 
 /**
@@ -36,13 +35,15 @@ import com.redhat.victims.VictimsException;
  */
 public class VictimsDB {
 
+	protected static DatabaseType defaultDB = new VictimsH2();
+
 	/**
 	 * The default driver class to use.
 	 * 
 	 * @return
 	 */
 	public static String defaultDriver() {
-		return VictimsH2DB.driver();
+		return defaultDB.driver();
 	}
 
 	/**
@@ -51,7 +52,7 @@ public class VictimsDB {
 	 * @return
 	 */
 	public static String defaultURL() {
-		return VictimsH2DB.defaultURL();
+		return defaultDB.url();
 	}
 
 	/**
@@ -64,9 +65,7 @@ public class VictimsDB {
 	public static VictimsDBInterface db() throws VictimsException {
 		Throwable throwable = null;
 		try {
-			return (VictimsDBInterface) new VictimsSqlDB(
-					VictimsConfig.dbDriver(), VictimsConfig.dbUrl(),
-					VictimsConfig.dbCreate());
+			return (VictimsDBInterface) new VictimsSqlDB();
 		} catch (SQLException e) {
 			throwable = e;
 		} catch (ClassNotFoundException e) {

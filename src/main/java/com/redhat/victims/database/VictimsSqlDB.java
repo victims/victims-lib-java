@@ -24,6 +24,7 @@ package com.redhat.victims.database;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -50,8 +51,7 @@ import com.redhat.victims.fingerprint.Algorithms;
  * @author abn
  * 
  */
-public class VictimsSqlDB extends VictimsSqlManager implements
-		VictimsDBInterface {
+public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	// The default file for storing the last sync'ed {@link Date}
 	protected static final String UPDATE_FILE_NAME = "lastUpdate";
 	protected File lastUpdate;
@@ -72,9 +72,9 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public VictimsSqlDB(String driver, String dbUrl, boolean create)
-			throws IOException, ClassNotFoundException, SQLException {
-		super(driver, dbUrl, create);
+	public VictimsSqlDB() throws IOException, ClassNotFoundException,
+			SQLException {
+		super();
 		lastUpdate = FileUtils.getFile(VictimsConfig.cache(), UPDATE_FILE_NAME);
 	}
 
@@ -86,13 +86,15 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	protected void remove(RecordStream recordStream) throws SQLException,
-			IOException {
+	protected void remove(Connection connection, RecordStream recordStream)
+			throws SQLException, IOException {
+		PreparedStatement ps = statement(connection, Query.DELETE_RECORD_HASH);
 		while (recordStream.hasNext()) {
 			VictimsRecord vr = recordStream.getNext();
-			addBatch(Query.DELETE_RECORD_HASH, vr.hash);
+			setObjects(ps, vr.hash);
+			ps.addBatch();
 		}
-		executeBatchQueue();
+		executeBatchAndClose(ps);
 	}
 
 	/**
@@ -104,8 +106,12 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	protected void update(RecordStream recordStream) throws SQLException,
-			IOException {
+	protected void update(Connection connection, RecordStream recordStream)
+			throws SQLException, IOException {
+		PreparedStatement insertFileHash = statement(connection,
+				Query.INSERT_FILEHASH);
+		PreparedStatement insertMeta = statement(connection, Query.INSERT_META);
+		PreparedStatement insertCVE = statement(connection, Query.INSERT_CVES);
 		while (recordStream.hasNext()) {
 			VictimsRecord vr = recordStream.getNext();
 			String hash = vr.hash.trim();
@@ -118,21 +124,24 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 
 			// insert file hahes
 			for (String filehash : vr.getHashes(Algorithms.SHA512).keySet()) {
-				addBatch(Query.INSERT_FILEHASH, id, filehash.trim());
+				setObjects(insertFileHash, id, filehash.trim());
+				insertFileHash.addBatch();
 			}
 
 			// insert metadata key-value pairs
 			HashMap<String, String> md = vr.getFlattenedMetaData();
 			for (String key : md.keySet()) {
-				addBatch(Query.INSERT_META, id, key, md.get(key));
+				setObjects(insertMeta, id, key, md.get(key));
+				insertMeta.addBatch();
 			}
 
 			// insert cves
 			for (String cve : vr.cves) {
-				addBatch(Query.INSERT_CVES, id, cve.trim());
+				setObjects(insertCVE, id, cve.trim());
+				insertCVE.addBatch();
 			}
 		}
-		executeBatchQueue();
+		executeBatchAndClose(insertFileHash, insertMeta, insertCVE);
 	}
 
 	/**
@@ -184,8 +193,7 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 	public void synchronize() throws VictimsException {
 		Throwable throwable = null;
 		try {
-			Connection connection = connection();
-			boolean auto = connection.getAutoCommit();
+			Connection connection = getConnection();
 			connection.setAutoCommit(false);
 			Savepoint savepoint = connection.setSavepoint();
 
@@ -193,8 +201,8 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 				VictimsService service = new VictimsService();
 				Date since = lastUpdated();
 
-				remove(service.removed(since));
-				update(service.updates(since));
+				remove(connection, service.removed(since));
+				update(connection, service.updates(since));
 
 				setLastUpdate(new Date());
 
@@ -210,7 +218,7 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 				}
 				connection.releaseSavepoint(savepoint);
 				connection.commit();
-				connection.setAutoCommit(auto);
+				connection.close();
 			}
 		} catch (SQLException e) {
 			throwable = e;
@@ -231,11 +239,18 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 	protected HashSet<String> getVulnerabilities(int recordId)
 			throws SQLException {
 		HashSet<String> cves = new HashSet<String>();
-		ResultSet matches = executeQuery(Query.FIND_CVES, recordId);
-		while (matches.next()) {
-			cves.add(matches.getString(1));
+		Connection connection = getConnection();
+		try {
+			PreparedStatement ps = setObjects(connection, Query.FIND_CVES,
+					recordId);
+			ResultSet matches = ps.executeQuery();
+			while (matches.next()) {
+				cves.add(matches.getString(1));
+			}
+			matches.close();
+		} finally {
+			connection.close();
 		}
-		matches.close();
 		return cves;
 	}
 
@@ -259,22 +274,31 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 			HashMap<Integer, MutableInteger> matchedPropCount = new HashMap<Integer, MutableInteger>();
 
 			ResultSet rs;
-			for (String key : props.keySet()) {
-				String value = props.get(key);
-				// TODO: Look at batching this
-				rs = executeQuery(Query.PROPERTY_MATCH, key, value);
-				while (rs.next()) {
-					Integer id = rs.getInt("record");
-					if (!matchedPropCount.containsKey(id)) {
-						matchedPropCount.put(id, new MutableInteger());
-					} else {
-						MutableInteger count = matchedPropCount.get(id);
-						count.increment();
-						if (count.get() == requiredMinCount) {
-							cves.addAll(getVulnerabilities(id));
+			PreparedStatement ps;
+			Connection connection = getConnection();
+			try {
+				for (String key : props.keySet()) {
+					String value = props.get(key);
+					ps = setObjects(connection, Query.PROPERTY_MATCH, key,
+							value);
+					rs = ps.executeQuery();
+					while (rs.next()) {
+						Integer id = rs.getInt("record");
+						if (!matchedPropCount.containsKey(id)) {
+							matchedPropCount.put(id, new MutableInteger());
+						} else {
+							MutableInteger count = matchedPropCount.get(id);
+							count.increment();
+							if (count.get() == requiredMinCount) {
+								cves.addAll(getVulnerabilities(id));
+							}
 						}
 					}
+					rs.close();
+					ps.close();
 				}
+			} finally {
+				connection.close();
 			}
 			return cves;
 		} catch (SQLException e) {
@@ -304,6 +328,24 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 		return hashCount;
 	}
 
+	protected void populateCachedCount() throws SQLException {
+		Connection connection = getConnection();
+		try {
+			cachedCount = new HashMap<Integer, Integer>();
+			Statement stmt = connection.createStatement();
+			ResultSet resultSet = stmt
+					.executeQuery(Query.FILEHASH_COUNT_PER_RECORD);
+			while (resultSet.next()) {
+				cachedCount
+						.put(resultSet.getInt("record"), resultSet.getInt(2));
+			}
+			resultSet.close();
+			stmt.close();
+		} finally {
+			connection.close();
+		}
+	}
+
 	/**
 	 * Internal method implementing search for vulnerabilities checking if the
 	 * given {@link VictimsRecord}'s contents are a superset of a record in the
@@ -325,14 +367,7 @@ public class VictimsSqlDB extends VictimsSqlManager implements
 		HashMap<Integer, Integer> hashCount = embeddedHashCount(hashes);
 		if (hashCount.size() > 0) {
 			if (cachedCount == null) {
-				// populate cache if not available
-				cachedCount = new HashMap<Integer, Integer>();
-				ResultSet resultSet = executeQuery(Query.FILEHASH_COUNT_PER_RECORD);
-				while (resultSet.next()) {
-					cachedCount.put(resultSet.getInt("record"),
-							resultSet.getInt(2));
-				}
-				resultSet.close();
+				populateCachedCount();
 			}
 
 			for (Integer id : hashCount.keySet()) {
