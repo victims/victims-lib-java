@@ -41,6 +41,7 @@ import org.apache.commons.io.FileUtils;
 import com.redhat.victims.VictimsConfig;
 import com.redhat.victims.VictimsException;
 import com.redhat.victims.VictimsRecord;
+import com.redhat.victims.VictimsResultCache;
 import com.redhat.victims.VictimsService;
 import com.redhat.victims.VictimsService.RecordStream;
 import com.redhat.victims.fingerprint.Algorithms;
@@ -55,9 +56,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	// The default file for storing the last sync'ed {@link Date}
 	protected static final String UPDATE_FILE_NAME = "lastUpdate";
 	protected File lastUpdate;
-
-	// Stores a cache of the content (filehash) count per record
-	protected HashMap<Integer, Integer> cachedCount;
+	protected VictimsResultCache cache;
 
 	/**
 	 * Create a new instance with the given parameters.
@@ -76,6 +75,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 			SQLException {
 		super();
 		lastUpdate = FileUtils.getFile(VictimsConfig.home(), UPDATE_FILE_NAME);
+		cache = new VictimsResultCache();
 	}
 
 	/**
@@ -86,15 +86,18 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	protected void remove(Connection connection, RecordStream recordStream)
+	protected int remove(Connection connection, RecordStream recordStream)
 			throws SQLException, IOException {
+		int count = 0;
 		PreparedStatement ps = statement(connection, Query.DELETE_RECORD_HASH);
 		while (recordStream.hasNext()) {
 			VictimsRecord vr = recordStream.getNext();
 			setObjects(ps, vr.hash);
 			ps.addBatch();
+			count++;
 		}
 		executeBatchAndClose(ps);
+		return count;
 	}
 
 	/**
@@ -106,8 +109,9 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	protected void update(Connection connection, RecordStream recordStream)
+	protected int update(Connection connection, RecordStream recordStream)
 			throws SQLException, IOException {
+		int count = 0;
 		PreparedStatement insertFileHash = statement(connection,
 				Query.INSERT_FILEHASH);
 		PreparedStatement insertMeta = statement(connection, Query.INSERT_META);
@@ -140,8 +144,11 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 				setObjects(insertCVE, id, cve.trim());
 				insertCVE.addBatch();
 			}
+
+			count++;
 		}
 		executeBatchAndClose(insertFileHash, insertMeta, insertCVE);
+		return count;
 	}
 
 	/**
@@ -201,13 +208,14 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 				VictimsService service = new VictimsService();
 				Date since = lastUpdated();
 
-				remove(connection, service.removed(since));
-				update(connection, service.updates(since));
+				int removed = remove(connection, service.removed(since));
+				int updated = update(connection, service.updates(since));
+
+				if (removed > 0 || updated > 0) {
+					cache.purge();
+				}
 
 				setLastUpdate(new Date());
-
-				// reset cache
-				cachedCount = null;
 			} catch (IOException e) {
 				throwable = e;
 			} catch (SQLException e) {
@@ -307,43 +315,42 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 
 	}
 
-	protected HashMap<Integer, Integer> embeddedHashCount(Set<String> hashes)
+	/**
+	 * Fetch record id's from the local database that is composed entirely of
+	 * hashes in the set of hashes provided.
+	 * 
+	 * @param hashes
+	 * @return A set record ids
+	 * @throws SQLException
+	 */
+	protected HashSet<Integer> getEmbeddedRecords(Set<String> hashes)
 			throws SQLException {
-		HashMap<Integer, Integer> hashCount = new HashMap<Integer, Integer>();
-		// TODO: Is there a better way?
-		String sql = constructInStringsQuery(Query.FILEHASH_MATCHES_PER_RECORD,
-				hashes);
 		Connection connection = getConnection();
 		Statement stmt = connection.createStatement();
+		HashSet<Integer> ignore = new HashSet<Integer>();
+		HashSet<Integer> candidates = new HashSet<Integer>();
 		try {
-			ResultSet resultSet = stmt.executeQuery(sql);
+			ResultSet resultSet = stmt.executeQuery(Query.FILEHASHES);
+			Integer id;
+			String filehash;
 			while (resultSet.next()) {
-				hashCount.put(resultSet.getInt(1), resultSet.getInt(2));
+				id = resultSet.getInt("record");
+				if (!ignore.contains(id)) {
+					filehash = resultSet.getString("filehash");
+					if (hashes.contains(filehash)) {
+						candidates.add(id);
+					} else {
+						candidates.remove(id);
+						ignore.add(id);
+					}
+				}
 			}
 			resultSet.close();
 		} finally {
 			stmt.close();
 			connection.close();
 		}
-		return hashCount;
-	}
-
-	protected void populateCachedCount() throws SQLException {
-		Connection connection = getConnection();
-		try {
-			cachedCount = new HashMap<Integer, Integer>();
-			Statement stmt = connection.createStatement();
-			ResultSet resultSet = stmt
-					.executeQuery(Query.FILEHASH_COUNT_PER_RECORD);
-			while (resultSet.next()) {
-				cachedCount
-						.put(resultSet.getInt("record"), resultSet.getInt(2));
-			}
-			resultSet.close();
-			stmt.close();
-		} finally {
-			connection.close();
-		}
+		return candidates;
 	}
 
 	/**
@@ -364,33 +371,27 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 			return cves;
 		}
 
-		HashMap<Integer, Integer> hashCount = embeddedHashCount(hashes);
-		if (hashCount.size() > 0) {
-			if (cachedCount == null) {
-				populateCachedCount();
-			}
-
-			for (Integer id : hashCount.keySet()) {
-				// Match every record that has all its filehashes in
-				// the provided VictimsRecord
-				if (hashCount.get(id).equals(cachedCount.get(id))) {
-					cves.addAll(getVulnerabilities(id));
-				}
-			}
+		for (Integer id : getEmbeddedRecords(hashes)) {
+			cves.addAll(getVulnerabilities(id));
 		}
+
 		return cves;
 	}
 
 	public HashSet<String> getVulnerabilities(VictimsRecord vr)
 			throws VictimsException {
 		try {
+			if (cache.exists(vr.hash)) {
+				return cache.get(vr.hash);
+			}
 			HashSet<String> cves = new HashSet<String>();
 			// Match jar sha512
 			cves.addAll(getVulnerabilities(vr.hash.trim()));
 			// Match any embedded filehashes
 			cves.addAll(getEmbeddedVulnerabilities(vr));
+			cache.add(vr.hash, cves);
 			return cves;
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			throw new VictimsException(
 					"Could not determine vulnerabilities for hash: " + vr.hash,
 					e);
