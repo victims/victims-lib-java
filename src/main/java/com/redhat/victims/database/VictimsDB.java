@@ -23,6 +23,7 @@ package com.redhat.victims.database;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -43,7 +44,23 @@ public class VictimsDB {
 	 * @return
 	 */
 	public static String defaultDriver() {
-		return "org.h2.Driver";
+		return Driver.H2;
+	}
+
+	/**
+	 * Get the default url for a preconfigured driver.
+	 * 
+	 * @return
+	 */
+	public static String defaultURL(String driver) {
+		assert Driver.exists(driver);
+		String cache = "";
+		try {
+			cache = VictimsConfig.cache().toString();
+		} catch (IOException e) {
+			// Ignore and use cwd
+		}
+		return Driver.url(driver, FilenameUtils.concat(cache, "victims"));
 	}
 
 	/**
@@ -52,14 +69,7 @@ public class VictimsDB {
 	 * @return
 	 */
 	public static String defaultURL() {
-		String cache = "";
-		try {
-			cache = VictimsConfig.cache().toString();
-		} catch (IOException e) {
-			// Ignore and use cwd
-		}
-		return String.format("jdbc:h2:%s;MVCC=true",
-				FilenameUtils.concat(cache, "victims"));
+		return defaultURL(defaultDriver());
 	}
 
 	/**
@@ -70,13 +80,17 @@ public class VictimsDB {
 	 * @throws VictimsException
 	 */
 	public static VictimsDBInterface db() throws VictimsException {
-		if (!VictimsConfig.dbDriver().equals(defaultDriver())
-				&& VictimsConfig.dbUrl().equals(defaultURL())) {
-			// Custom drivers require custom urls
-			throw new VictimsException(
-					"A custome JDBC driver was specified without setting "
-							+ VictimsConfig.Key.DB_URL);
+		String driver = VictimsConfig.dbDriver();
+		String dbUrl = VictimsConfig.dbUrl();
+		if (!driver.equals(defaultDriver())) {
+			if (!Driver.exists(driver) && dbUrl.equals(defaultURL())) {
+				// Custom drivers require custom urls
+				throw new VictimsException(
+						"A custom JDBC driver was specified without setting "
+								+ VictimsConfig.Key.DB_URL);
+			}
 		}
+
 		Throwable throwable = null;
 		try {
 			return (VictimsDBInterface) new VictimsSqlDB();
@@ -89,6 +103,31 @@ public class VictimsDB {
 		}
 		throw new VictimsException(
 				"Failed to get a Victims Database instance.", throwable);
+	}
+
+	public static class Driver {
+		public static final String H2 = "org.h2.Driver";
+		public static final String DERBY = "org.apache.derby.jdbc.EmbeddedDriver";
+
+		public static final HashMap<String, String> urls = new HashMap<String, String>();
+
+		static {
+			urls.put(H2, "jdbc:h2:%s;MVCC=true");
+			urls.put(DERBY, "jdbc:derby:%s;create=true");
+		}
+
+		public static boolean exists(String driver) {
+			return urls.containsKey(driver);
+		}
+
+		public static String url(String driver, String filepath) {
+			return String.format(urls.get(driver), filepath);
+		}
+
+		public static void addDriver(String driver, String urlFormat) {
+			urls.put(driver, urlFormat);
+		}
+
 	}
 
 }

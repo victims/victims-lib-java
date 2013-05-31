@@ -172,7 +172,10 @@ public class VictimsConfig {
 	public static String dbUrl() {
 		String dbUrl = getPropertyValue(Key.DB_URL);
 		if (dbUrl == null) {
-			dbUrl = VictimsDB.defaultURL();
+			if(VictimsDB.Driver.exists(dbDriver())) {
+				return VictimsDB.defaultURL(dbDriver());
+			}
+			return VictimsDB.defaultURL();
 		}
 		return dbUrl;
 	}
