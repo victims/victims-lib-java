@@ -228,7 +228,8 @@ public class VictimsSQL {
 	 */
 	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "
-				+ "id BIGINT AUTO_INCREMENT, " + "hash VARCHAR(128)" + ")";
+				+ "id BIGINT PRIMARY KEY AUTO_INCREMENT, "
+				+ "hash VARCHAR(128)" + ")";
 		protected final static String CREATE_TABLE_FILEHASHES = "CREATE TABLE filehashes ("
 				+ "record BIGINT, "
 				+ "filehash VARCHAR(128), "
