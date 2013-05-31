@@ -54,13 +54,13 @@ public class VictimsDB {
 	 */
 	public static String defaultURL(String driver) {
 		assert Driver.exists(driver);
-		String cache = "";
+		String home = "";
 		try {
-			cache = VictimsConfig.cache().toString();
+			home = VictimsConfig.home().toString();
 		} catch (IOException e) {
 			// Ignore and use cwd
 		}
-		return Driver.url(driver, FilenameUtils.concat(cache, "victims"));
+		return Driver.url(driver, FilenameUtils.concat(home, "victims"));
 	}
 
 	/**

@@ -49,7 +49,7 @@ public class VictimsConfig {
 		DEFAULT_PROPS.put(Key.URI, "http://www.victi.ms/");
 		DEFAULT_PROPS.put(Key.ENTRY, "service/");
 		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
-		DEFAULT_PROPS.put(Key.CACHE, FilenameUtils.concat(FileUtils
+		DEFAULT_PROPS.put(Key.HOME, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
 		DEFAULT_PROPS.put(Key.ALGORITHMS, "MD5,SHA1,SHA512");
 		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsDB.defaultDriver());
@@ -122,8 +122,8 @@ public class VictimsConfig {
 	 * @return
 	 * @throws IOException
 	 */
-	public static File cache() throws IOException {
-		File directory = new File(getPropertyValue(Key.CACHE));
+	public static File home() throws IOException {
+		File directory = new File(getPropertyValue(Key.HOME));
 		if (!directory.exists()) {
 			FileUtils.forceMkdir(directory);
 		}
@@ -172,7 +172,7 @@ public class VictimsConfig {
 	public static String dbUrl() {
 		String dbUrl = getPropertyValue(Key.DB_URL);
 		if (dbUrl == null) {
-			if(VictimsDB.Driver.exists(dbDriver())) {
+			if (VictimsDB.Driver.exists(dbDriver())) {
 				return VictimsDB.defaultURL(dbDriver());
 			}
 			return VictimsDB.defaultURL();
@@ -204,7 +204,16 @@ public class VictimsConfig {
 	 * @return
 	 */
 	public static boolean forcedUpdate() {
-		return Boolean.getBoolean(Key.DB_FORCE_UPDATE);
+		return Boolean.getBoolean(Key.DB_PURGE);
+	}
+
+	/**
+	 * A client option to check if it's cache has to be purged.
+	 * 
+	 * @return
+	 */
+	public static boolean purgeCache() {
+		return Boolean.getBoolean(Key.PURGE_CACHE);
 	}
 
 	/**
@@ -218,13 +227,14 @@ public class VictimsConfig {
 		public static final String URI = "victims.service.uri";
 		public static final String ENTRY = "victims.service.entry";
 		public static final String ENCODING = "victims.encoding";
-		public static final String CACHE = "victims.cache";
+		public static final String HOME = "victims.home";
+		public static final String PURGE_CACHE = "victims.cache.purge";
 		public static final String ALGORITHMS = "victims.algorithms";
 		public static final String DB_DRIVER = "victims.db.driver";
 		public static final String DB_URL = "victims.db.url";
 		public static final String DB_USER = "victims.db.user";
 		public static final String DB_PASS = "victims.db.pass";
-		public static final String DB_FORCE_UPDATE = "victims.db.force";
+		public static final String DB_PURGE = "victims.db.purge";
 	}
 
 }
