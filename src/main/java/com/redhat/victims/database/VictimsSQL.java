@@ -35,6 +35,13 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import com.redhat.victims.VictimsConfig;
 
+/**
+ * This class implements SQL queries, connection managers and helper methods for
+ * JDBC drivers.
+ * 
+ * @author abn
+ * 
+ */
 public class VictimsSQL {
 	private String dbDriver = null;
 	private String dbUrl = null;
@@ -91,6 +98,14 @@ public class VictimsSQL {
 		setUp();
 	}
 
+	/**
+	 * Wrapper to create a prepared statement.
+	 * 
+	 * @param connection
+	 * @param query
+	 * @return
+	 * @throws SQLException
+	 */
 	protected PreparedStatement statement(Connection connection, String query)
 			throws SQLException {
 		return connection.prepareStatement(query);
@@ -112,6 +127,14 @@ public class VictimsSQL {
 		return ps;
 	}
 
+	/**
+	 * Helper function to set the values given, to a {@link PreparedStatement},
+	 * in the order in which they are given.
+	 * 
+	 * @param ps
+	 * @param objects
+	 * @throws SQLException
+	 */
 	protected void setObjects(PreparedStatement ps, Object... objects)
 			throws SQLException {
 		int index = 1;
@@ -121,6 +144,13 @@ public class VictimsSQL {
 		}
 	}
 
+	/**
+	 * Helper function to execute all pending patch operations in the given
+	 * {@link PreparedStatement}s and close it.
+	 * 
+	 * @param preparedStatements
+	 * @throws SQLException
+	 */
 	protected void executeBatchAndClose(PreparedStatement... preparedStatements)
 			throws SQLException {
 		for (PreparedStatement ps : preparedStatements) {
