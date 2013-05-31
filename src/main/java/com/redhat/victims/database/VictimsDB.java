@@ -105,6 +105,12 @@ public class VictimsDB {
 				"Failed to get a Victims Database instance.", throwable);
 	}
 
+	/**
+	 * This class facilitates use of multiple driver classes
+	 * 
+	 * @author abn
+	 * 
+	 */
 	public static class Driver {
 		public static final String H2 = "org.h2.Driver";
 
@@ -114,14 +120,38 @@ public class VictimsDB {
 			urls.put(H2, "jdbc:h2:%s;MVCC=true");
 		}
 
+		/**
+		 * Test if a given driver class is configured.
+		 * 
+		 * @param driver
+		 *            The driver class.
+		 * @return
+		 */
 		public static boolean exists(String driver) {
 			return urls.containsKey(driver);
 		}
 
-		public static String url(String driver, String filepath) {
-			return String.format(urls.get(driver), filepath);
+		/**
+		 * Get the default connection URL for a given driver.
+		 * 
+		 * @param driver
+		 *            The driver class.
+		 * @param path
+		 *            The path to the db on disk/network.
+		 * @return
+		 */
+		public static String url(String driver, String path) {
+			return String.format(urls.get(driver), path);
 		}
 
+		/**
+		 * Add a driver to use.
+		 * 
+		 * @param driver
+		 *            The driver class.
+		 * @param urlFormat
+		 *            The format of the connection url. Eg: jdbc:h2:%s;MVCC=true
+		 */
 		public static void addDriver(String driver, String urlFormat) {
 			urls.put(driver, urlFormat);
 		}
