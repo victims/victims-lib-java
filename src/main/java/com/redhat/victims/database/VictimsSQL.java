@@ -16,8 +16,7 @@ import com.redhat.victims.VictimsConfig;
 
 public class VictimsSQL {
 	private static String H2_AUTO_INC = "AUTO_INCREMENT";
-	private static String DERBY_AUTO_INC = "PRIMARY KEY GENERATED ALWAYS AS "
-			+ "IDENTITY (START WITH 1, INCREMENT BY 1)";
+	private static String DERBY_AUTO_INC = "GENERATED ALWAYS AS " + "IDENTITY";
 
 	private String dbDriver = null;
 	private String dbUrl = null;
@@ -55,7 +54,8 @@ public class VictimsSQL {
 				Statement stmt = connection.createStatement();
 				String createRecords = Query.CREATE_TABLE_RECORDS;
 				if (dbDriver.equals(VictimsDB.Driver.DERBY)) {
-					createRecords = createRecords.replace(H2_AUTO_INC, DERBY_AUTO_INC);
+					createRecords = createRecords.replace(H2_AUTO_INC,
+							DERBY_AUTO_INC);
 				}
 				stmt.execute(createRecords);
 				stmt.execute(Query.CREATE_TABLE_FILEHASHES);
@@ -228,15 +228,14 @@ public class VictimsSQL {
 	 */
 	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "
-				+ "id BIGINT PRIMARY KEY AUTO_INCREMENT, "
-				+ "hash VARCHAR(128)" + ")";
+				+ "id BIGINT AUTO_INCREMENT, " + "hash VARCHAR(128)" + ")";
 		protected final static String CREATE_TABLE_FILEHASHES = "CREATE TABLE filehashes ("
 				+ "record BIGINT, "
 				+ "filehash VARCHAR(128), "
 				+ "FOREIGN KEY(record) REFERENCES records(id) "
 				+ "ON DELETE CASCADE" + ")";
 		protected final static String CREATE_TABLE_META = "CREATE TABLE meta ("
-				+ "record BIGINT, " + "key VARCHAR(255), "
+				+ "record BIGINT, " + "prop VARCHAR(255), "
 				+ "value VARCHAR(255), "
 				+ "FOREIGN KEY(record) REFERENCES records(id) "
 				+ "ON DELETE CASCADE" + ")";
@@ -246,7 +245,7 @@ public class VictimsSQL {
 				+ "ON DELETE CASCADE" + ")";
 
 		protected static final String INSERT_FILEHASH = "INSERT INTO filehashes (record, filehash) VALUES (?, ?)";
-		protected final static String INSERT_META = "INSERT INTO meta (record, key, value) VALUES (?, ?, ?)";
+		protected final static String INSERT_META = "INSERT INTO meta (record, prop, value) VALUES (?, ?, ?)";
 		protected final static String INSERT_CVES = "INSERT INTO cves (record, cve) VALUES (?, ?)";
 		protected final static String INSERT_RECORD = "INSERT INTO records (hash) VALUES (?)";
 
@@ -262,6 +261,6 @@ public class VictimsSQL {
 		protected final static String FILEHASH_MATCHES_PER_RECORD = "SELECT record, count(filehash) FROM filehashes "
 				+ "WHERE filehash IN (?) " + "GROUP BY record";
 		protected final static String FILEHASH_COUNT_PER_RECORD = "SELECT record, count(*) FROM filehashes GROUP BY record";
-		protected final static String PROPERTY_MATCH = "SELECT record FROM meta WHERE key = ? AND value = ?";
+		protected final static String PROPERTY_MATCH = "SELECT record FROM meta WHERE prop = ? AND value = ?";
 	}
 }
