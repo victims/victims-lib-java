@@ -75,7 +75,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	public VictimsSqlDB() throws IOException, ClassNotFoundException,
 			SQLException {
 		super();
-		lastUpdate = FileUtils.getFile(VictimsConfig.cache(), UPDATE_FILE_NAME);
+		lastUpdate = FileUtils.getFile(VictimsConfig.home(), UPDATE_FILE_NAME);
 	}
 
 	/**

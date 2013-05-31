@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.redhat.victims.VictimsConfig;
 
 public class VictimsSQL {
-
+	private String dbDriver = null;
 	private String dbUrl = null;
 	private String dbUser = null;
 	private String dbPass = null;
@@ -62,10 +62,11 @@ public class VictimsSQL {
 
 	public VictimsSQL() throws IOException, ClassNotFoundException,
 			SQLException {
-		Class.forName(VictimsConfig.dbDriver());
+		dbDriver = VictimsConfig.dbDriver();
 		dbUrl = VictimsConfig.dbUrl();
 		dbUser = VictimsConfig.dbUser();
 		dbPass = VictimsConfig.dbPass();
+		Class.forName(dbDriver);
 		setUp();
 	}
 
@@ -219,14 +220,15 @@ public class VictimsSQL {
 	 */
 	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "
-				+ "id BIGINT AUTO_INCREMENT, " + "hash VARCHAR(128)" + ")";
+				+ "id BIGINT PRIMARY KEY AUTO_INCREMENT, "
+				+ "hash VARCHAR(128)" + ")";
 		protected final static String CREATE_TABLE_FILEHASHES = "CREATE TABLE filehashes ("
 				+ "record BIGINT, "
 				+ "filehash VARCHAR(128), "
 				+ "FOREIGN KEY(record) REFERENCES records(id) "
 				+ "ON DELETE CASCADE" + ")";
 		protected final static String CREATE_TABLE_META = "CREATE TABLE meta ("
-				+ "record BIGINT, " + "key VARCHAR(255), "
+				+ "record BIGINT, " + "prop VARCHAR(255), "
 				+ "value VARCHAR(255), "
 				+ "FOREIGN KEY(record) REFERENCES records(id) "
 				+ "ON DELETE CASCADE" + ")";
@@ -236,7 +238,7 @@ public class VictimsSQL {
 				+ "ON DELETE CASCADE" + ")";
 
 		protected static final String INSERT_FILEHASH = "INSERT INTO filehashes (record, filehash) VALUES (?, ?)";
-		protected final static String INSERT_META = "INSERT INTO meta (record, key, value) VALUES (?, ?, ?)";
+		protected final static String INSERT_META = "INSERT INTO meta (record, prop, value) VALUES (?, ?, ?)";
 		protected final static String INSERT_CVES = "INSERT INTO cves (record, cve) VALUES (?, ?)";
 		protected final static String INSERT_RECORD = "INSERT INTO records (hash) VALUES (?)";
 
@@ -252,6 +254,6 @@ public class VictimsSQL {
 		protected final static String FILEHASH_MATCHES_PER_RECORD = "SELECT record, count(filehash) FROM filehashes "
 				+ "WHERE filehash IN (?) " + "GROUP BY record";
 		protected final static String FILEHASH_COUNT_PER_RECORD = "SELECT record, count(*) FROM filehashes GROUP BY record";
-		protected final static String PROPERTY_MATCH = "SELECT record FROM meta WHERE key = ? AND value = ?";
+		protected final static String PROPERTY_MATCH = "SELECT record FROM meta WHERE prop = ? AND value = ?";
 	}
 }
