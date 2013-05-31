@@ -11,7 +11,6 @@ import java.util.HashSet;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.redhat.victims.VictimsService.RecordStream;
@@ -92,13 +91,21 @@ public class VictimsDatabaseTest {
 		vdb.synchronize();
 	}
 
-	@Ignore
-	@Test
-	public void testDerby() throws VictimsException, IOException {
-		System.setProperty(VictimsConfig.Key.DB_DRIVER,
-				"org.apache.derby.jdbc.EmbeddedDriver");
-		VictimsDBInterface vdb = VictimsDB.db();
-		vdb.synchronize();
-		testVulnerabilities(vdb);
+	@Test(expected = VictimsException.class)
+	public void testDerby() throws IOException, VictimsException {
+		String old = System.getProperty(VictimsConfig.Key.DB_DRIVER);
+		try {
+			System.setProperty(VictimsConfig.Key.DB_DRIVER,
+					"org.apache.derby.jdbc.EmbeddedDriver");
+			VictimsDBInterface vdb = VictimsDB.db();
+			vdb.synchronize();
+		} finally {
+			if (old != null) {
+				System.setProperty(VictimsConfig.Key.DB_DRIVER, old);
+			} else {
+				System.clearProperty(VictimsConfig.Key.DB_DRIVER);
+			}
+		}
+
 	}
 }

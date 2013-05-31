@@ -107,13 +107,11 @@ public class VictimsDB {
 
 	public static class Driver {
 		public static final String H2 = "org.h2.Driver";
-		public static final String DERBY = "org.apache.derby.jdbc.EmbeddedDriver";
 
 		public static final HashMap<String, String> urls = new HashMap<String, String>();
 
 		static {
 			urls.put(H2, "jdbc:h2:%s;MVCC=true");
-			urls.put(DERBY, "jdbc:derby:%s;create=true");
 		}
 
 		public static boolean exists(String driver) {

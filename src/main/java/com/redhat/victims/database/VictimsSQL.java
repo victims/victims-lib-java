@@ -15,9 +15,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.redhat.victims.VictimsConfig;
 
 public class VictimsSQL {
-	private static String H2_AUTO_INC = "AUTO_INCREMENT";
-	private static String DERBY_AUTO_INC = "GENERATED ALWAYS AS " + "IDENTITY";
-
 	private String dbDriver = null;
 	private String dbUrl = null;
 	private String dbUser = null;
@@ -52,12 +49,7 @@ public class VictimsSQL {
 		try {
 			if (!isSetUp(connection)) {
 				Statement stmt = connection.createStatement();
-				String createRecords = Query.CREATE_TABLE_RECORDS;
-				if (dbDriver.equals(VictimsDB.Driver.DERBY)) {
-					createRecords = createRecords.replace(H2_AUTO_INC,
-							DERBY_AUTO_INC);
-				}
-				stmt.execute(createRecords);
+				stmt.execute(Query.CREATE_TABLE_RECORDS);
 				stmt.execute(Query.CREATE_TABLE_FILEHASHES);
 				stmt.execute(Query.CREATE_TABLE_META);
 				stmt.execute(Query.CREATE_TABLE_CVES);
