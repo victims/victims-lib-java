@@ -265,9 +265,12 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	public HashSet<String> getVulnerabilities(String sha512)
 			throws VictimsException {
 		try {
+			if (cache.exists(sha512)) {
+				return cache.get(sha512);
+			}
 			int id = selectRecordId(sha512);
 			return getVulnerabilities(id);
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			throw new VictimsException("Failed to get vulnerabilities for "
 					+ sha512, e);
 		}
