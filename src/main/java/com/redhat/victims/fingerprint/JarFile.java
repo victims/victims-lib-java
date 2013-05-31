@@ -50,7 +50,6 @@ public class JarFile extends AbstractFile {
 
 	protected ArrayList<Object> contents;
 	protected ArrayList<Object> embedded;
-	protected Fingerprint contentFingerprint;
 	protected HashMap<String, Metadata> metadata;
 	protected JarInputStream jis;
 
@@ -68,11 +67,8 @@ public class JarFile extends AbstractFile {
 		this.metadata = new HashMap<String, Metadata>();
 		this.fileName = fileName;
 		this.jis = new JarInputStream(new ByteArrayInputStream(bytes));
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		Content file;
 		while ((file = getNextFile()) != null) {
-			bos.write(file.bytes);
-
 			// Handle metadata/special cases
 			String lowerCaseFileName = file.name.toLowerCase();
 			if (lowerCaseFileName.endsWith("pom.properties")) {
@@ -103,10 +99,7 @@ public class JarFile extends AbstractFile {
 			metadata.put("MANIFEST.MF", Metadata.fromManifest(mf));
 		}
 
-		// TODO: decide if we want to keep the content-only hash
-		this.contentFingerprint = Processor.fingerprint(bos.toByteArray());
 		this.fingerprint = Processor.fingerprint(bytes);
-		bos.close();
 		jis.close();
 	}
 
@@ -135,7 +128,6 @@ public class JarFile extends AbstractFile {
 	public Artifact getRecord() {
 		Artifact result = super.getRecord();
 		result.put(Key.CONTENT, contents);
-		result.put(Key.CONTENT_FINGERPRINT, contentFingerprint);
 		result.put(Key.METADATA, metadata);
 		result.put(Key.EMBEDDED, embedded);
 		return result;
