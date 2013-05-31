@@ -114,12 +114,4 @@ public class Artifact extends HashMap<Key, Object> {
 		}
 		return null;
 	}
-
-	public Fingerprint contentOnlyFingerprint() {
-		Object value = get(Key.CONTENT_FINGERPRINT);
-		if (value != null) {
-			return (Fingerprint) value;
-		}
-		return null;
-	}
 }
