@@ -15,7 +15,11 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.redhat.victims.VictimsConfig;
 
 public class VictimsSQL {
+	private static String H2_AUTO_INC = "AUTO_INCREMENT";
+	private static String DERBY_AUTO_INC = "PRIMARY KEY GENERATED ALWAYS AS "
+			+ "IDENTITY (START WITH 1, INCREMENT BY 1)";
 
+	private String dbDriver = null;
 	private String dbUrl = null;
 	private String dbUser = null;
 	private String dbPass = null;
@@ -49,7 +53,11 @@ public class VictimsSQL {
 		try {
 			if (!isSetUp(connection)) {
 				Statement stmt = connection.createStatement();
-				stmt.execute(Query.CREATE_TABLE_RECORDS);
+				String createRecords = Query.CREATE_TABLE_RECORDS;
+				if (dbDriver.equals(VictimsDB.Driver.DERBY)) {
+					createRecords = createRecords.replace(H2_AUTO_INC, DERBY_AUTO_INC);
+				}
+				stmt.execute(createRecords);
 				stmt.execute(Query.CREATE_TABLE_FILEHASHES);
 				stmt.execute(Query.CREATE_TABLE_META);
 				stmt.execute(Query.CREATE_TABLE_CVES);
@@ -62,10 +70,11 @@ public class VictimsSQL {
 
 	public VictimsSQL() throws IOException, ClassNotFoundException,
 			SQLException {
-		Class.forName(VictimsConfig.dbDriver());
+		dbDriver = VictimsConfig.dbDriver();
 		dbUrl = VictimsConfig.dbUrl();
 		dbUser = VictimsConfig.dbUser();
 		dbPass = VictimsConfig.dbPass();
+		Class.forName(dbDriver);
 		setUp();
 	}
 
@@ -219,7 +228,8 @@ public class VictimsSQL {
 	 */
 	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "
-				+ "id BIGINT AUTO_INCREMENT, " + "hash VARCHAR(128)" + ")";
+				+ "id BIGINT PRIMARY KEY AUTO_INCREMENT, "
+				+ "hash VARCHAR(128)" + ")";
 		protected final static String CREATE_TABLE_FILEHASHES = "CREATE TABLE filehashes ("
 				+ "record BIGINT, "
 				+ "filehash VARCHAR(128), "
