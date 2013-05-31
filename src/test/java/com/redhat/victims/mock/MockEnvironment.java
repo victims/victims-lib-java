@@ -36,17 +36,17 @@ public class MockEnvironment {
 			throws IOException {
 		initCache();
 		MockService.start(updateResponse, removeResponse);
-		System.setProperty(VictimsConfig.Key.DB_FORCE_UPDATE, "true");
+		System.setProperty(VictimsConfig.Key.DB_PURGE, "true");
 		System.setProperty(VictimsConfig.Key.URI, MockService.uri());
-		System.setProperty(VictimsConfig.Key.CACHE,
+		System.setProperty(VictimsConfig.Key.HOME,
 				TEMP_CACHE.getAbsolutePath());
 	}
 
 	public static void tearDown() {
 		MockService.stop();
-		System.clearProperty(VictimsConfig.Key.DB_FORCE_UPDATE);
+		System.clearProperty(VictimsConfig.Key.DB_PURGE);
 		System.clearProperty(VictimsConfig.Key.URI);
-		System.clearProperty(VictimsConfig.Key.CACHE);
+		System.clearProperty(VictimsConfig.Key.HOME);
 		deleteCache();
 	}
 
