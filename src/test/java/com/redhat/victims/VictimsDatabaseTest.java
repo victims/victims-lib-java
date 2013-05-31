@@ -11,6 +11,7 @@ import java.util.HashSet;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.redhat.victims.VictimsService.RecordStream;
@@ -52,22 +53,22 @@ public class VictimsDatabaseTest {
 				.getVulnerabilities(sha512).contains(cve));
 	}
 
-	private HashSet<String> getVulnerabilities(VictimsRecord vr)
-			throws VictimsException {
+	private HashSet<String> getVulnerabilities(VictimsDBInterface vdb,
+			VictimsRecord vr) throws VictimsException {
 		return vdb.getVulnerabilities(vr);
 	}
 
-	@Test
-	public void testVulnerabilities() throws IOException, VictimsException {
+	private void testVulnerabilities(VictimsDBInterface vdb)
+			throws IOException, VictimsException {
 		FileInputStream fin = new FileInputStream(TEST_RESPONSE);
 		RecordStream rs = new RecordStream(fin);
 		VictimsRecord vr;
 		while (rs.hasNext()) {
 			vr = rs.getNext();
 			if (vr.getHashes(Algorithms.SHA512).size() > 0) {
-				HashSet<String> cves = getVulnerabilities(vr);
+				HashSet<String> cves = getVulnerabilities(vdb, vr);
 				vr.hash = "0";
-				HashSet<String> result = getVulnerabilities(vr);
+				HashSet<String> result = getVulnerabilities(vdb, vr);
 				assertEquals("Unexpected number of CVEs", cves.size(),
 						result.size());
 				for (String cve : cves) {
@@ -81,8 +82,23 @@ public class VictimsDatabaseTest {
 	}
 
 	@Test
+	public void testVulnerabilities() throws IOException, VictimsException {
+		testVulnerabilities(vdb);
+	}
+
+	@Test
 	public void testResync() throws VictimsException {
 		VictimsDBInterface vdb = VictimsDB.db();
 		vdb.synchronize();
+	}
+
+	@Ignore
+	@Test
+	public void testDerby() throws VictimsException, IOException {
+		System.setProperty(VictimsConfig.Key.DB_DRIVER,
+				"org.apache.derby.jdbc.EmbeddedDriver");
+		VictimsDBInterface vdb = VictimsDB.db();
+		vdb.synchronize();
+		testVulnerabilities(vdb);
 	}
 }
