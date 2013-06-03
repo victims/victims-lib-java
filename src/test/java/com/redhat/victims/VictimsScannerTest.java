@@ -30,12 +30,13 @@ public class VictimsScannerTest {
 			throws IOException {
 		OutputStream os = new ByteArrayOutputStream();
 		File test = new File(inFile);
-		String expected = FileUtils.readFileToString(new File(jsonFile)).trim();
 		try {
 			VictimsScanner.scan(test.getAbsolutePath(), os);
-			String result = os.toString().trim();
-			assertEquals("Scanned json string not equal to expected", expected,
-					result);
+			VictimsRecord result = VictimsRecord.fromJSON(os.toString().trim());
+			String jstr = FileUtils.readFileToString(new File(jsonFile)).trim();
+			VictimsRecord expected = VictimsRecord.fromJSON(jstr);
+			assertTrue("Scanned record not equal to expected",
+					expected.equals(result));
 		} catch (IOException e) {
 			fail("Could not scan file: " + inFile);
 		}
@@ -47,7 +48,6 @@ public class VictimsScannerTest {
 			throws IOException {
 		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
 		File test = new File(inFile);
-		String expected = FileUtils.readFileToString(new File(jsonFile)).trim();
 		int expected_count = 1;
 		try {
 			VictimsScanner.scan(test.getAbsolutePath(), records);
@@ -55,9 +55,11 @@ public class VictimsScannerTest {
 			assertTrue(String.format("Expected %d records, found %d.",
 					expected_count, result_count), result_count == 1);
 			// the output stream write adds a line to split records
-			String result = records.get(0).toString();
-			assertEquals("Scanned json string not equal to expected", expected,
-					result);
+			VictimsRecord result = records.get(0);
+			String jstr = FileUtils.readFileToString(new File(jsonFile)).trim();
+			VictimsRecord expected = VictimsRecord.fromJSON(jstr);
+			assertTrue("Scanned record not equal to expected",
+					expected.equals(result));
 		} catch (IOException e) {
 			fail("Could not scan file: " + inFile);
 		}
