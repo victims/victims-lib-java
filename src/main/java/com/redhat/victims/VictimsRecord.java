@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 
 import org.apache.commons.io.FilenameUtils;
@@ -87,6 +88,46 @@ public class VictimsRecord {
 	public String toString() {
 		Gson gson = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
 		return gson.toJson(this);
+	}
+
+	private boolean setContailsAll(Set<String> s1, Set<String> s2) {
+		for (String e1 : s1) {
+			boolean found = false;
+			for (String e2 : s2) {
+				if (e1.equals(e2)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Test if the given {@link VictimsRecord} is equal to this instance. The
+	 * comparison is done solely by testing if all available file hashes match.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public boolean equals(VictimsRecord that) {
+		for (Algorithms algorithm : VictimsConfig.algorithms()) {
+			Set<String> thatHashes = that.getHashes(algorithm).keySet();
+			Set<String> thisHashes = this.getHashes(algorithm).keySet();
+
+			// TODO: Investigate why thisHashes.equals(thatHashes) does not work
+			// Emulate java.util.Set.equals
+			if ((thisHashes.size() != thatHashes.size())
+					|| !setContailsAll(thisHashes, thatHashes)
+					|| !setContailsAll(thatHashes, thisHashes)) {
+				return false;
+			}
+
+		}
+		return true;
 	}
 
 	/**
