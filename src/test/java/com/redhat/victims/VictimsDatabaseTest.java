@@ -20,15 +20,12 @@ import com.redhat.victims.fingerprint.Algorithms;
 import com.redhat.victims.mock.MockEnvironment;
 
 public class VictimsDatabaseTest {
-	private static final String TEST_RESPONSE = "testdata/service/test.response";
-	private static final String TEST_SHA512 = "testdata/service/test.sha512";
-	private static final String TEST_CVE = "testdata/service/test.cve";
 
 	private static VictimsDBInterface vdb;
 
 	@BeforeClass
 	public static void setUp() throws IOException, VictimsException {
-		File updateResponse = new File(TEST_RESPONSE);
+		File updateResponse = new File(Resources.TEST_RESPONSE);
 		MockEnvironment.setUp(updateResponse, null);
 		sync();
 	}
@@ -45,9 +42,10 @@ public class VictimsDatabaseTest {
 
 	@Test
 	public void testSynchronize() throws VictimsException, IOException {
-		String sha512 = FileUtils.readFileToString(new File(TEST_SHA512))
+		String sha512 = FileUtils.readFileToString(
+				new File(Resources.TEST_SHA512)).trim();
+		String cve = FileUtils.readFileToString(new File(Resources.TEST_CVE))
 				.trim();
-		String cve = FileUtils.readFileToString(new File(TEST_CVE)).trim();
 		assertTrue("Synchronized DB does not contain expected hash.", vdb
 				.getVulnerabilities(sha512).contains(cve));
 	}
@@ -59,7 +57,7 @@ public class VictimsDatabaseTest {
 
 	private void testVulnerabilities(VictimsDBInterface vdb)
 			throws IOException, VictimsException {
-		FileInputStream fin = new FileInputStream(TEST_RESPONSE);
+		FileInputStream fin = new FileInputStream(Resources.TEST_RESPONSE);
 		RecordStream rs = new RecordStream(fin);
 		VictimsRecord vr;
 		while (rs.hasNext()) {

@@ -19,12 +19,6 @@ import org.junit.Test;
 import com.redhat.victims.fingerprint.Algorithms;
 
 public class VictimsScannerTest {
-	private static final String JAR_FILE = "testdata/junit-4.11/junit-4.11.jar";
-	private static final String JAR_SHA1 = JAR_FILE + ".sha1";
-	private static final String JAR_JSON = JAR_FILE + ".json";
-	private static final String POM_FILE = "testdata/junit-4.11/junit-4.11.pom";
-	private static final String POM_SHA1 = POM_FILE + ".sha1";
-	private static final String POM_JSON = POM_FILE + ".json";
 
 	public void jsonTestStream(String inFile, String jsonFile)
 			throws IOException {
@@ -95,26 +89,26 @@ public class VictimsScannerTest {
 
 	@Test
 	public void testScanStringOutputStreamJar() throws IOException {
-		jsonTestStream(JAR_FILE, JAR_JSON);
-		jsonTestStream(POM_FILE, POM_JSON);
+		jsonTestStream(Resources.JAR_FILE, Resources.JAR_JSON);
+		jsonTestStream(Resources.POM_FILE, Resources.POM_JSON);
 	}
 
 	@Test
 	public void testScanStringArrayListOfVictimsRecord() throws IOException {
-		jsonTestArray(JAR_FILE, JAR_JSON);
-		jsonTestArray(POM_FILE, POM_JSON);
+		jsonTestArray(Resources.JAR_FILE, Resources.JAR_JSON);
+		jsonTestArray(Resources.POM_FILE, Resources.POM_JSON);
 	}
 
 	@Test
 	public void testGetRecordsString() throws IOException {
-		valueTest(JAR_FILE, JAR_SHA1, false);
-		valueTest(POM_FILE, POM_SHA1, false);
+		valueTest(Resources.JAR_FILE, Resources.JAR_SHA1, false);
+		valueTest(Resources.POM_FILE, Resources.POM_SHA1, false);
 	}
 
 	@Test
 	public void testGetRecordsInputStreamString() throws IOException {
-		valueTest(JAR_FILE, JAR_SHA1, true);
-		valueTest(POM_FILE, POM_SHA1, true);
+		valueTest(Resources.JAR_FILE, Resources.JAR_SHA1, true);
+		valueTest(Resources.POM_FILE, Resources.POM_SHA1, true);
 	}
 
 }

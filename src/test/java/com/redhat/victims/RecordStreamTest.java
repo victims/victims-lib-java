@@ -13,16 +13,14 @@ import com.redhat.victims.VictimsService.RecordStream;
 import com.redhat.victims.fingerprint.Algorithms;
 
 public class RecordStreamTest {
-	private static final String TEST_RESPONSE = "testdata/service/test.response";
-	private static final String TEST_SHA512 = "testdata/service/test.sha512";
-	private static final String TEST_CVE = "testdata/service/test.cve";
 
 	@Test
 	public void testRecordStreamInputStream() throws IOException {
-		FileInputStream fis = new FileInputStream(TEST_RESPONSE);
-		String sha512 = FileUtils.readFileToString(new File(TEST_SHA512))
+		FileInputStream fis = new FileInputStream(Resources.TEST_RESPONSE);
+		String sha512 = FileUtils.readFileToString(
+				new File(Resources.TEST_SHA512)).trim();
+		String cve = FileUtils.readFileToString(new File(Resources.TEST_CVE))
 				.trim();
-		String cve = FileUtils.readFileToString(new File(TEST_CVE)).trim();
 		RecordStream rs = new RecordStream(fis);
 		boolean hashFound = false;
 		while (rs.hasNext()) {

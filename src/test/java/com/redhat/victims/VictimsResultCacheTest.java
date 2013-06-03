@@ -15,11 +15,10 @@ import com.redhat.victims.database.VictimsDBInterface;
 import com.redhat.victims.mock.MockEnvironment;
 
 public class VictimsResultCacheTest {
-	private static final String TEST_RESPONSE = "testdata/service/test.response";
 
 	@BeforeClass
 	public static void setUp() throws IOException, VictimsException {
-		File updateResponse = new File(TEST_RESPONSE);
+		File updateResponse = new File(Resources.TEST_RESPONSE);
 		MockEnvironment.setUp(updateResponse, null);
 	}
 
