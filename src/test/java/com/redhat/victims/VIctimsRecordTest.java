@@ -11,8 +11,8 @@ import org.junit.Test;
 public class VIctimsRecordTest {
 	@Test
 	public void testEquals() throws IOException {
-		String jstr = FileUtils.readFileToString(
-				new File(Resources.JAR_JSON)).trim();
+		String jstr = FileUtils.readFileToString(new File(Resources.JAR_JSON))
+				.trim();
 		VictimsRecord vr = VictimsRecord.fromJSON(jstr);
 		assertTrue("Equality check for Victims Record failed.", vr.equals(vr));
 	}
