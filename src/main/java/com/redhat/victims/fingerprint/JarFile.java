@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -53,6 +56,79 @@ public class JarFile extends AbstractFile {
 	protected JarInputStream jis;
 
 	/**
+	 * Synchronized method of adding metadata
+	 * 
+	 * @param filename
+	 * @param md
+	 */
+	protected synchronized void putMetadata(String filename, Metadata md) {
+		metadata.put(filename, md);
+	}
+
+	/**
+	 * Synchronized method for adding a new conent
+	 * 
+	 * @param record
+	 * @param filename
+	 */
+	protected synchronized void addContent(Artifact record, String filename) {
+		if (record != null) {
+			if (filename.endsWith(".jar")) {
+				// this is an embedded archive
+				embedded.add(record);
+			} else {
+				contents.add(record);
+			}
+		}
+	}
+
+	/**
+	 * Threadable task for processing a given {@link Content} file.
+	 * 
+	 * @param file
+	 */
+	protected void processContent(Content file) {
+		// Handle metadata/special cases
+		String lowerCaseFileName = file.name.toLowerCase();
+		if (lowerCaseFileName.endsWith("pom.properties")) {
+			// handle pom properties files
+			InputStream is = new ByteArrayInputStream(file.bytes);
+			Metadata md = Metadata.fromPomProperties(is);
+			putMetadata(file.name, md);
+		}
+
+		// This is separate as we may or may not want to fingerprint
+		// all files.
+		if (RECURSIVE) {
+			Artifact record = Processor.process(file.bytes, file.name, true);
+			addContent(record, file.name);
+		}
+	}
+
+	/**
+	 * Helper method to sumit a new threaded tast to a given executor.
+	 * 
+	 * @param executor
+	 * @param file
+	 */
+	protected void submitJob(ExecutorService executor, Content file) {
+		// lifted from http://stackoverflow.com/a/5853198/1874604
+		class OneShotTask implements Runnable {
+			Content file;
+
+			OneShotTask(Content file) {
+				this.file = file;
+			}
+
+			public void run() {
+				processContent(file);
+			}
+		}
+		// we do not care about Future
+		executor.submit(new OneShotTask(file));
+	}
+
+	/**
 	 * 
 	 * @param bytes
 	 *            A byte array containing the bytes of the file
@@ -66,30 +142,21 @@ public class JarFile extends AbstractFile {
 		this.metadata = new HashMap<String, Metadata>();
 		this.fileName = fileName;
 		this.jis = new JarInputStream(new ByteArrayInputStream(bytes));
-		Content file;
-		while ((file = getNextFile()) != null) {
-			// Handle metadata/special cases
-			String lowerCaseFileName = file.name.toLowerCase();
-			if (lowerCaseFileName.endsWith("pom.properties")) {
-				// handle pom properties files
-				InputStream is = new ByteArrayInputStream(file.bytes);
-				metadata.put(file.name, Metadata.fromPomProperties(is));
-			}
 
-			// This is separate as we may or may not want to fingerprint
-			// all files.
-			if (RECURSIVE) {
-				Artifact record = Processor
-						.process(file.bytes, file.name, true);
-				if (record != null) {
-					if (file.name.endsWith(".jar")) {
-						// this is an embedded archive
-						embedded.add(record);
-					} else {
-						contents.add(record);
-					}
-				}
-			}
+		// process contents
+		Content file;
+		ExecutorService executor = Executors.newCachedThreadPool();
+		while ((file = getNextFile()) != null) {
+			submitJob(executor, file);
+		}
+		executor.shutdown();
+		try {
+			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			// probably a bad idea wrap as an IO Exception for now
+			throw new IOException(
+					"There was an issue while waiting for the ExecutorService "
+							+ "to terminate.", e);
 		}
 
 		// Process the metadata from the manifest if available
@@ -133,6 +200,7 @@ public class JarFile extends AbstractFile {
 	}
 
 	/**
+	 * Get the next file as a {@link Content} in this archive.
 	 * 
 	 * @return
 	 * @throws IOException
