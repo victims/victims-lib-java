@@ -30,6 +30,26 @@ dependencies {
     compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.3'
 }
 ```
+### Configuration Options
+There are multiple configurations that can be set via system properties. This can be set using _-D_ option as:
+```sh
+-D$PROPERTY=$VALUE
+```
+
+| Option | Default Value | Description |
+| ------ | ------------- | ----------- |
+|*victims.service.uri*|```http://www.victi.ms/```|This sets the base URI for accessing the victims web-service.|
+|*victims.service.entry*|```service/```|The entry point for the REST-API for the web-service.|
+|*victims.encoding*|```UTF-8```|Default file encoding when serializing byte streams.|
+|*victims.home*|```$USER_HOME/.victims```|The OS specific home location for storing cache and database.|
+|*victims.cache.purge*|```false```|Set to true to force purging of the results cache.|
+|*victims.algorithms*|```MD5,SHA1,SHA512```|The algorithms to get fingerprints for.|
+|*victims.db.driver*|```VictimsDB.defaultDriver()```|The database driver class to load. This has to be available in the class path. The default implementation uses *org.h2.Driver*.|
+|*victims.db.url*|```VictimsDB.defaultURL(DB_DRIVER)```|The database url to use when connecting to the database. Eg: *jdbc:h2:~/.victims/victims;MVCC=true*.|
+|*victims.db.user*|```victims```|The username to use when connecting to a database.|
+|*victims.db.pass*|```victims```|The password to use when connection to a database.|
+|*victims.db.purge*|``false```|Set this to force all records in the database to be updated. This is achieved be removing all records and fetching all updates from the server.|
+
 ## Building from source
 ### Requrements
 * java 1.6
