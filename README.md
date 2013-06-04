@@ -31,7 +31,7 @@ dependencies {
 }
 ```
 ### Configuration Options
-There are multiple configurations that can be set via system properties. This can be set using _-D_ option as:
+There are multiple configurations that can be set via system properties. When using them programatically use the keys provided by *VictimsConfig.Key* and methods provided by *VictimsConfig*. These can be set by end-users by using the _-D_ option as:
 ```sh
 -D$PROPERTY=$VALUE
 ```
