@@ -34,7 +34,8 @@ public class VictimsResultCacheTest {
 		return cves;
 	}
 
-	private VictimsResultCache prepareCache(String hash) throws IOException {
+	private VictimsResultCache prepareCache(String hash)
+			throws VictimsException {
 		HashSet<String> src = cveSet();
 		VictimsResultCache vrc = new VictimsResultCache();
 		vrc.add(hash, src);
@@ -52,7 +53,7 @@ public class VictimsResultCacheTest {
 	}
 
 	@Test
-	public void testAdd() throws IOException {
+	public void testAdd() throws VictimsException {
 		String hash = "0";
 		VictimsResultCache vrc = prepareCache(hash);
 		HashSet<String> result = vrc.get(hash);
@@ -61,7 +62,7 @@ public class VictimsResultCacheTest {
 	}
 
 	@Test
-	public void testPurge() throws IOException {
+	public void testPurge() throws VictimsException {
 		String hash = "0";
 		VictimsResultCache vrc = prepareCache(hash);
 		vrc.purge();
@@ -69,7 +70,7 @@ public class VictimsResultCacheTest {
 	}
 
 	@Test
-	public void testPurgeConfig() throws IOException {
+	public void testPurgeConfig() throws VictimsException {
 		String hash = "0";
 		VictimsResultCache vrc = prepareCache(hash);
 
@@ -88,7 +89,7 @@ public class VictimsResultCacheTest {
 	}
 
 	@Test
-	public void testPurgeOnSync() throws IOException, VictimsException {
+	public void testPurgeOnSync() throws VictimsException {
 		String hash = "0";
 		VictimsResultCache vrc = prepareCache(hash);
 		VictimsDBInterface vdb = VictimsDB.db();
@@ -96,5 +97,4 @@ public class VictimsResultCacheTest {
 		assertTrue("Cache was not correctly purged on database sync.",
 				!vrc.exists(hash));
 	}
-
 }

@@ -21,8 +21,6 @@ package com.redhat.victims.database;
  * #L%
  */
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.apache.commons.io.FilenameUtils;
@@ -57,7 +55,7 @@ public class VictimsDB {
 		String home = "";
 		try {
 			home = VictimsConfig.home().toString();
-		} catch (IOException e) {
+		} catch (VictimsException e) {
 			// Ignore and use cwd
 		}
 		return Driver.url(driver, FilenameUtils.concat(home, "victims"));
@@ -90,19 +88,7 @@ public class VictimsDB {
 								+ VictimsConfig.Key.DB_URL);
 			}
 		}
-
-		Throwable throwable = null;
-		try {
-			return (VictimsDBInterface) new VictimsSqlDB();
-		} catch (SQLException e) {
-			throwable = e;
-		} catch (ClassNotFoundException e) {
-			throwable = e;
-		} catch (IOException e) {
-			throwable = e;
-		}
-		throw new VictimsException(
-				"Failed to get a Victims Database instance.", throwable);
+		return (VictimsDBInterface) new VictimsSqlDB();
 	}
 
 	/**

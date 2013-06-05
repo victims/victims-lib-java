@@ -21,7 +21,6 @@ package com.redhat.victims.database;
  * #L%
  */
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -34,6 +33,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.redhat.victims.VictimsConfig;
+import com.redhat.victims.VictimsException;
 
 /**
  * This class implements SQL queries, connection managers and helper methods for
@@ -88,14 +88,18 @@ public class VictimsSQL {
 		}
 	}
 
-	public VictimsSQL() throws IOException, ClassNotFoundException,
-			SQLException {
-		dbDriver = VictimsConfig.dbDriver();
-		dbUrl = VictimsConfig.dbUrl();
-		dbUser = VictimsConfig.dbUser();
-		dbPass = VictimsConfig.dbPass();
-		Class.forName(dbDriver);
-		setUp();
+	public VictimsSQL() throws VictimsException {
+		try {
+			dbDriver = VictimsConfig.dbDriver();
+			dbUrl = VictimsConfig.dbUrl();
+			dbUser = VictimsConfig.dbUser();
+			dbPass = VictimsConfig.dbPass();
+			Class.forName(dbDriver);
+			setUp();
+		} catch (Throwable t) {
+			throw new VictimsException(
+					"Could not create a VictimsSQL instance.", t);
+		}
 	}
 
 	/**

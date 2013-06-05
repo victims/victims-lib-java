@@ -108,11 +108,17 @@ public class VictimsConfig {
 	 * Get a complete webservice uri by merging base and entry point.
 	 * 
 	 * @return
-	 * @throws MalformedURLException
+	 * @throws VictimsException
 	 */
-	public static String serviceURI() throws MalformedURLException {
-		URL merged = new URL(new URL(uri()), entry());
-		return merged.toString();
+	public static String serviceURI() throws VictimsException {
+		URL merged;
+		try {
+			merged = new URL(new URL(uri()), entry());
+			return merged.toString();
+		} catch (MalformedURLException e) {
+			throw new VictimsException(
+					"Invalid configuration for service URI.", e);
+		}
 	}
 
 	/**
@@ -120,12 +126,17 @@ public class VictimsConfig {
 	 * will be created.
 	 * 
 	 * @return
-	 * @throws IOException
+	 * @throws VictimsException
 	 */
-	public static File home() throws IOException {
+	public static File home() throws VictimsException {
 		File directory = new File(getPropertyValue(Key.HOME));
 		if (!directory.exists()) {
-			FileUtils.forceMkdir(directory);
+			try {
+				FileUtils.forceMkdir(directory);
+			} catch (IOException e) {
+				throw new VictimsException("Could not create home directory.",
+						e);
+			}
 		}
 		return directory;
 	}
