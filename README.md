@@ -1,6 +1,8 @@
 victims-lib-java [![Build Status](https://travis-ci.org/victims/victims-lib-java.png)](https://travis-ci.org/victims/victims-lib-java)
 ================
-A java library providing fingerprinting and service interaction for the Victims Project.
+A java library providing fingerprinting and service interaction for the Victims Project. 
+
+Current version is ```1.3.1```.
 
 ### GPG Keys
 Download: [pgp.mit.edu](http://pgp.mit.edu:11371/pks/lookup?search=0xEEE72232&op=index)
@@ -20,14 +22,14 @@ Update your _pom.xml_ dependencies.
 <dependency>
   <groupId>com.redhat.victims</groupId>
   <artifactId>victims-lib</artifactId>
-  <version>1.3</version>
+  <version>1.3.1</version>
 </dependency>
 ```
 ### Gradle
 Update your _build.gradle_ dependencies.
 ```groovy
 dependencies {
-    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.3'
+    compile group: 'com.redhat.victims', name: 'victims-lib', version: '1.3.1'
 }
 ```
 ### Configuration Options
