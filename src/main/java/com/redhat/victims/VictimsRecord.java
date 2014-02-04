@@ -32,7 +32,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedHashTreeMap;
 import com.redhat.victims.fingerprint.Algorithms;
 import com.redhat.victims.fingerprint.Artifact;
 import com.redhat.victims.fingerprint.Fingerprint;
@@ -353,18 +352,20 @@ public class VictimsRecord {
 		static {
 			PERMITTED_VALUE_TYPES.add(Metadata.class);
 			PERMITTED_VALUE_TYPES.add(String.class);
-			PERMITTED_VALUE_TYPES.add(LinkedHashTreeMap.class);
+			PERMITTED_VALUE_TYPES.add(Map.class);
 		}
 
 		@Override
 		public Object put(String key, Object value) {
-			if (!PERMITTED_VALUE_TYPES.contains(value.getClass())) {
-				System.out.println(key.toString());
-				throw new IllegalArgumentException(String.format(
-						"Values of class type <%s> are not permitted in <%s>",
-						value.getClass().getName(), this.getClass().getName()));
+			for (Class<?> candidate : PERMITTED_VALUE_TYPES) {
+				if (candidate.isAssignableFrom(value.getClass())) {
+					return super.put(key, value);
+				}
 			}
-			return super.put(key, value);
+			System.out.println(key.toString());
+			throw new IllegalArgumentException(String.format(
+				"Values of class type <%s> are not permitted in <%s>",
+				value.getClass().getName(), this.getClass().getName()));
 		}
 	}
 }
