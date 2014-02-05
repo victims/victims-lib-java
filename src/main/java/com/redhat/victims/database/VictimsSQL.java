@@ -311,5 +311,6 @@ public class VictimsSQL {
 		protected final static String FILEHASH_COUNT_PER_RECORD = "SELECT record, count(*) FROM filehashes GROUP BY record";
 		protected final static String FILEHASHES = "SELECT record, filehash FROM filehashes";
 		protected final static String PROPERTY_MATCH = "SELECT record FROM meta WHERE prop = ? AND value = ?";
+		protected final static String RECORD_COUNT = "SELECT COUNT(*) from records";
 	}
 }

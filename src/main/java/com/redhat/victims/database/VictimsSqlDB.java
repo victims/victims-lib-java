@@ -401,6 +401,32 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 		}
 	}
 
+	public int getRecordCount() throws VictimsException {
+
+		int count = 0;
+		Connection connection = null;
+		Statement stmt = null;
+		try {
+			connection = getConnection();
+			stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(Query.RECORD_COUNT);
+			if (resultSet.next()){
+				count = resultSet.getInt(1);
+			}
+			resultSet.close();
+
+		} catch (SQLException e){
+			throw new VictimsException("Could not query database size", e);
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (connection != null) connection.close();
+			} catch (Exception e){
+			}
+		}
+		return count;
+	}
+
 	/**
 	 * This class is used internally to store counts.
 	 *

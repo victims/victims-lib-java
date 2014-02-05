@@ -79,4 +79,11 @@ public interface VictimsDBInterface {
 	public HashSet<String> getVulnerabilities(HashMap<String, String> props)
 			throws VictimsException;
 
+	/**
+	 * Returns the number of records that exist within the Victims database.
+	 *
+	 * @return The number of records in the Victims Database
+	 * @throws VictimsException
+	 */
+	public int getRecordCount() throws VictimsException;
 }
