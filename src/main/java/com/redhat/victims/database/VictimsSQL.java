@@ -10,12 +10,12 @@ package com.redhat.victims.database;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -38,9 +38,9 @@ import com.redhat.victims.VictimsException;
 /**
  * This class implements SQL queries, connection managers and helper methods for
  * JDBC drivers.
- * 
+ *
  * @author abn
- * 
+ *
  */
 public class VictimsSQL {
 	private String dbDriver = null;
@@ -50,7 +50,7 @@ public class VictimsSQL {
 
 	/**
 	 * Get a new connection from the {@link VictimsSqlManager} pool.
-	 * 
+	 *
 	 * @return
 	 * @throws SQLException
 	 */
@@ -69,7 +69,7 @@ public class VictimsSQL {
 
 	/**
 	 * Initializes a database by created required tables.
-	 * 
+	 *
 	 * @throws SQLException
 	 */
 	protected void setUp() throws SQLException {
@@ -104,7 +104,7 @@ public class VictimsSQL {
 
 	/**
 	 * Wrapper to create a prepared statement.
-	 * 
+	 *
 	 * @param connection
 	 * @param query
 	 * @return
@@ -118,7 +118,7 @@ public class VictimsSQL {
 	/**
 	 * Give a query and list of objects to set, a prepared statement is created,
 	 * cached and returned with the objects set in the order they are provided.
-	 * 
+	 *
 	 * @param query
 	 * @param objects
 	 * @return
@@ -134,7 +134,7 @@ public class VictimsSQL {
 	/**
 	 * Helper function to set the values given, to a {@link PreparedStatement},
 	 * in the order in which they are given.
-	 * 
+	 *
 	 * @param ps
 	 * @param objects
 	 * @throws SQLException
@@ -151,7 +151,7 @@ public class VictimsSQL {
 	/**
 	 * Helper function to execute all pending patch operations in the given
 	 * {@link PreparedStatement}s and close it.
-	 * 
+	 *
 	 * @param preparedStatements
 	 * @throws SQLException
 	 */
@@ -168,7 +168,7 @@ public class VictimsSQL {
 	 * Given a an sql query containing the string "IN (?)" and a set of strings,
 	 * this method constructs a query by safely replacing the first occurence of
 	 * "IN (?)" with "IN ('v1','v2'...)", where v1,v2,.. are in values.
-	 * 
+	 *
 	 * @param query
 	 * @param values
 	 * @return
@@ -192,7 +192,7 @@ public class VictimsSQL {
 
 	/**
 	 * Given a hash get the first occurance's record id.
-	 * 
+	 *
 	 * @param hash
 	 * @return
 	 * @throws SQLException
@@ -221,7 +221,7 @@ public class VictimsSQL {
 
 	/**
 	 * Insert a new record with the given hash and return the record id.
-	 * 
+	 *
 	 * @param hash
 	 * @return A record id if it was created correctly, else return -1.
 	 * @throws SQLException
@@ -248,7 +248,7 @@ public class VictimsSQL {
 	/**
 	 * Remove records matching a given hash. This will cascade to all
 	 * references.
-	 * 
+	 *
 	 * @param hash
 	 * @throws SQLException
 	 */
@@ -269,9 +269,9 @@ public class VictimsSQL {
 
 	/**
 	 * This class defines SQL queries that are available.
-	 * 
+	 *
 	 * @author abn
-	 * 
+	 *
 	 */
 	protected static class Query {
 		protected final static String CREATE_TABLE_RECORDS = "CREATE TABLE records ( "

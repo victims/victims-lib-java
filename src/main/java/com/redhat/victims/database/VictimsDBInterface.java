@@ -10,12 +10,12 @@ package com.redhat.victims.database;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,7 +32,7 @@ public interface VictimsDBInterface {
 
 	/**
 	 * Returns when the database was successfully updated
-	 * 
+	 *
 	 * @return A {@link Date} object indicating when the last update was
 	 *         performed
 	 * @throws VictimsException
@@ -42,7 +42,7 @@ public interface VictimsDBInterface {
 	/**
 	 * Synchronizes the database with the changes fetched from the victi.ms
 	 * service.
-	 * 
+	 *
 	 * @throws VictimsException
 	 */
 	public void synchronize() throws VictimsException;
@@ -50,7 +50,7 @@ public interface VictimsDBInterface {
 	/**
 	 * Given a {@link VictimsRecord}, finds all CVEs that the artifact is
 	 * vulnerable to.
-	 * 
+	 *
 	 * @param vr
 	 * @return
 	 * @throws VictimsException
@@ -59,7 +59,7 @@ public interface VictimsDBInterface {
 			throws VictimsException;
 
 	/**
-	 * 
+	 *
 	 * @param sha512
 	 * @return
 	 * @throws VictimsException
@@ -69,7 +69,7 @@ public interface VictimsDBInterface {
 
 	/**
 	 * For a given set of properties match all CVEs that match.
-	 * 
+	 *
 	 * @param props
 	 *            A set of key/value pairs representing all meta properties to
 	 *            be matched.
