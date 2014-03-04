@@ -202,12 +202,13 @@ public class VictimsScanner {
 	 */
 	private static class ArrayOutputStream extends VictimsOutputStream {
 
-		private ArrayList<VictimsRecord> records;
+		private final ArrayList<VictimsRecord> records;
 
 		public ArrayOutputStream(ArrayList<VictimsRecord> records) {
 			this.records = records;
 		}
 
+		@Override
 		public void write(VictimsRecord record) {
 			this.records.add(record);
 		}
@@ -220,12 +221,13 @@ public class VictimsScanner {
 	 */
 	private static class StringOutputStream extends VictimsOutputStream {
 
-		private OutputStream os;
+		private final OutputStream os;
 
 		public StringOutputStream(OutputStream os) {
 			this.os = os;
 		}
 
+		@Override
 		public void write(VictimsRecord record) throws IOException {
 			String line = record.toString();
 			line += "\n";
