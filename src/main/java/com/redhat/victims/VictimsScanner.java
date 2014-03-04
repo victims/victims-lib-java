@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 
@@ -109,7 +110,7 @@ public class VictimsScanner {
 	 */
 	private static void scanSource(String source, VictimsOutputStream vos)
 			throws IOException {
-		File f = new File(source);
+		File f = new File(FilenameUtils.getFullPath(source));
 		if (f.isDirectory()) {
 			scanDir(f, vos);
 		} else if (f.isFile()) {
