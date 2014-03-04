@@ -110,11 +110,14 @@ public class VictimsScanner {
 	 */
 	private static void scanSource(String source, VictimsOutputStream vos)
 			throws IOException {
-		File f = new File(FilenameUtils.getFullPath(source));
+		File f = new File(FilenameUtils.normalize(source));
 		if (f.isDirectory()) {
 			scanDir(f, vos);
 		} else if (f.isFile()) {
 			scanFile(f, vos);
+		} else {
+			throw new IOException(String.format("Invalid source file: '%s'",
+					source));
 		}
 	}
 
