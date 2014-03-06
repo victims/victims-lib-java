@@ -96,7 +96,13 @@ public class VictimsRecord {
 	 * @param that
 	 * @return
 	 */
-	public boolean equals(VictimsRecord that) {
+	@Override
+	public boolean equals(Object rhs) {
+		if (!(rhs instanceof VictimsRecord)){
+			return false;
+		}
+		VictimsRecord that = (VictimsRecord) rhs;
+
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
 			// Copying sets as java.util.Set.equals do not seem to work
 			// otherwise
