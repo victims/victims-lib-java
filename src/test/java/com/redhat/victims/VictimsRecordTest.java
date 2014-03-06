@@ -5,8 +5,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+
+import com.redhat.victims.fingerprint.Artifact;
+import com.redhat.victims.fingerprint.Key;
 
 public class VictimsRecordTest {
 	@Test
@@ -32,6 +36,12 @@ public class VictimsRecordTest {
 		b.add(rec2);
 
 		assertTrue("Contains all works at basic level", a.containsAll(b));
+
+		String jsonData = FileUtils.readFileToString(new File(Resources.TEST_JAR));
+		VictimsRecord extra = VictimsRecord.fromJSON(jsonData);
+		b.add(extra);
+		assertTrue("Negative case with invalid record data", !a.containsAll(b));
+
 	
 	}
 
