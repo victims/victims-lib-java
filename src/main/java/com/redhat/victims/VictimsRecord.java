@@ -144,7 +144,12 @@ public class VictimsRecord {
 	 * @param that
 	 * @return
 	 */
-	public boolean containsAll(VictimsRecord that) {
+	public boolean containsAll(Object o) {
+		if (!(o instanceof VictimsRecord)) {
+			return false;
+		}
+		VictimsRecord that = (VictimsRecord) o;
+
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
 			if (!(this.containsAlgorithm(algorithm) && that
 					.containsAlgorithm(algorithm))) {
