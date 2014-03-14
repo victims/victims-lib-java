@@ -43,6 +43,7 @@ import com.redhat.victims.fingerprint.Algorithms;
  * 
  */
 public class VictimsConfig {
+	protected static String DEFAULT_ALGORITHM_STRING = "SHA512";
 	public static final HashMap<String, String> DEFAULT_PROPS = new HashMap<String, String>();
 
 	static {
@@ -51,10 +52,14 @@ public class VictimsConfig {
 		DEFAULT_PROPS.put(Key.ENCODING, "UTF-8");
 		DEFAULT_PROPS.put(Key.HOME, FilenameUtils.concat(FileUtils
 				.getUserDirectory().getAbsolutePath(), ".victims"));
-		DEFAULT_PROPS.put(Key.ALGORITHMS, "MD5,SHA1,SHA512");
+		DEFAULT_PROPS.put(Key.ALGORITHMS, DEFAULT_ALGORITHM_STRING);
 		DEFAULT_PROPS.put(Key.DB_DRIVER, VictimsDB.defaultDriver());
 		DEFAULT_PROPS.put(Key.DB_USER, "victims");
 		DEFAULT_PROPS.put(Key.DB_PASS, "victims");
+	}
+
+	public static Algorithms getDefaultAlgorithm() {
+		return Algorithms.valueOf(DEFAULT_ALGORITHM_STRING);
 	}
 
 	/**
@@ -158,11 +163,11 @@ public class VictimsConfig {
 				// skip
 			}
 		}
-		if (algorithms.size() == 0) {
-			for (Algorithms alg : Algorithms.values()) {
-				algorithms.add(alg);
-			}
+
+		if (!algorithms.contains(getDefaultAlgorithm())) {
+			algorithms.add(getDefaultAlgorithm());
 		}
+
 		return algorithms;
 	}
 

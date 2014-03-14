@@ -14,11 +14,9 @@ public class VictimsConfigTest {
 	public void testAlgorithms() {
 		// test defaults
 		ArrayList<Algorithms> results = VictimsConfig.algorithms();
-		for (Algorithms alg : Algorithms.values()) {
-			assertTrue(
-					"Default algorithm configuration do not contain all defined algorithms.",
-					results.contains(alg));
-		}
+
+		assertTrue("Unexpected default algorithm configuration.",
+				results.contains(VictimsConfig.getDefaultAlgorithm()));
 
 		// test legal set
 		System.setProperty(VictimsConfig.Key.ALGORITHMS, "SHA512");
@@ -38,7 +36,7 @@ public class VictimsConfigTest {
 		for (Algorithms alg : Algorithms.values()) {
 			assertTrue(
 					"All algorithms are invalid case did not return all defined algorithms.",
-					results.contains(alg));
+					results.contains(VictimsConfig.getDefaultAlgorithm()));
 		}
 	}
 

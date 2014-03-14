@@ -68,6 +68,8 @@ public class VictimsScannerTest {
 		}
 		String expected = FileUtils.readFileToString(new File(sha1File)).trim();
 		int expected_count = 1;
+
+		System.setProperty(VictimsConfig.Key.ALGORITHMS, "SHA1");
 		try {
 			ArrayList<VictimsRecord> records = null;
 			if (useStream) {
@@ -80,10 +82,13 @@ public class VictimsScannerTest {
 			int result_count = records.size();
 			assertTrue(String.format("Expected %d records, found %d.",
 					expected_count, result_count), result_count == 1);
-			String result = records.get(0).getHash(Algorithms.SHA1).trim();
-			assertEquals("SHA1 mismatch", expected, result);
+			Algorithms alg = Algorithms.SHA1;
+			String result = records.get(0).getHash(alg).trim();
+			assertEquals(alg.toString() + " mismatch", expected, result);
 		} catch (IOException e) {
 			fail("Could not scan file: " + inFile);
+		} finally {
+			System.setProperty(VictimsConfig.Key.ALGORITHMS, "");
 		}
 	}
 
