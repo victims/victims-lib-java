@@ -105,7 +105,10 @@ public class VictimsRecord {
 		VictimsRecord that = (VictimsRecord) rhs;
 
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
-			if (this.getHash(algorithm).equals(that.getHash(algorithm))) {
+			String thisHash = this.getHash(algorithm);
+			String thatHash = that.getHash(algorithm);
+			if (thisHash.equals(thatHash)
+					&& (thisHash.length() > 0 || thatHash.length() > 0)) {
 				// this matches so we can continue to next algorithm
 				continue;
 			}
