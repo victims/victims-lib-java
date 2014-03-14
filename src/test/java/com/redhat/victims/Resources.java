@@ -9,7 +9,7 @@ public class Resources {
 	public static final String POM_SHA1 = POM_FILE + ".sha1";
 	public static final String POM_JSON = POM_FILE + ".json";
 
-	public static final String RECORD_CLIENT_JAR = "testdata/records/victims-client-1.0-SNAPSHOT.jar.json";
+	public static final String RECORD_CLIENT_JAR = "testdata/records/victims-client.jar.json";
 
 	public static final String TEST_RESPONSE = "testdata/service/test.response";
 	public static final String TEST_SHA512 = "testdata/service/test.sha512";
