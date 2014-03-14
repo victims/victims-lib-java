@@ -91,19 +91,24 @@ public class VictimsRecord {
 
 	/**
 	 * Test if the given {@link VictimsRecord} is equal to this instance. The
-	 * comparison is done solely by testing if all available file hashes match.
+	 * comparison is done first on combined hashes and then by testing if all
+	 * available file hashes match.
 	 * 
 	 * @param that
 	 * @return
 	 */
 	@Override
 	public boolean equals(Object rhs) {
-		if (!(rhs instanceof VictimsRecord)){
+		if (!(rhs instanceof VictimsRecord)) {
 			return false;
 		}
 		VictimsRecord that = (VictimsRecord) rhs;
 
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
+			if (this.getHash(algorithm).equals(that.getHash(algorithm))) {
+				// this matches so we can continue to next algorithm
+				continue;
+			}
 			// Copying sets as java.util.Set.equals do not seem to work
 			// otherwise
 			HashSet<String> thatHashes = new HashSet<String>(that.getHashes(
@@ -115,6 +120,52 @@ public class VictimsRecord {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Test if hashes for the given algorithm is present in this record.
+	 * 
+	 * @param algorithm
+	 * @return
+	 */
+	public boolean containsAlgorithm(Algorithms algorithm) {
+		return hashes.containsKey(normalizeKey(algorithm));
+	}
+
+	/**
+	 * Test if this instance of {@link VictimsRecord} contains all the file
+	 * hashes present in the given instance. Comparison is done on all available
+	 * algorithms until a subset match is found. If for an algorithm, either
+	 * this or that record is empty, check is skipped.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public boolean containsAll(VictimsRecord that) {
+		for (Algorithms algorithm : VictimsConfig.algorithms()) {
+			if (!(this.containsAlgorithm(algorithm) && that
+					.containsAlgorithm(algorithm))) {
+				// skip if both this and that do not have the current algorithm
+				continue;
+			}
+			HashSet<String> thatHashes = new HashSet<String>(that.getHashes(
+					algorithm).keySet());
+			HashSet<String> thisHashes = new HashSet<String>(this.getHashes(
+					algorithm).keySet());
+
+			if (thisHashes.isEmpty() || thatHashes.isEmpty()) {
+				// there is no real value in comparing empty sets
+				continue;
+			}
+
+			if (thisHashes.containsAll(thatHashes)) {
+				// we found a subset match
+				return true;
+			}
+		}
+
+		// we have gone through all algorithms without finding a subset match
+		return false;
 	}
 
 	/**
@@ -370,8 +421,8 @@ public class VictimsRecord {
 			}
 			System.out.println(key.toString());
 			throw new IllegalArgumentException(String.format(
-				"Values of class type <%s> are not permitted in <%s>",
-				value.getClass().getName(), this.getClass().getName()));
+					"Values of class type <%s> are not permitted in <%s>",
+					value.getClass().getName(), this.getClass().getName()));
 		}
 	}
 }
