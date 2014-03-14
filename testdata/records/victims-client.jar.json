@@ -1,0 +1,57 @@
+{
+    "cves": [],
+    "db_version": "2.0",
+    "format": "Jar",
+    "hash": "c36a198593dc4ac202cb5a4f4edf3a0bc74e856505e83def756aa18e6247db00d0f14b65762d1097766efb78e69fac38ec64543f65ca70a8d019569bfe2ab143",
+    "hashes": {
+        "sha512": {
+            "combined": "c36a198593dc4ac202cb5a4f4edf3a0bc74e856505e83def756aa18e6247db00d0f14b65762d1097766efb78e69fac38ec64543f65ca70a8d019569bfe2ab143",
+            "files": {
+                "064de483cf85c3b853b0af8babfa25ab11b8fa2fab8cab37fcf6e554fe9c0332ab3346d2fcf930ef7d2c900c4ccb26883de62d962d68c73eaed29910596af21f": "com/redhat/victims/cli/CommandLineOption.class",
+                "164b8fe7b09300b4f389d27fea68d915fbaaac1aa3cb1133178855e53f0ab6510d2e4458c4a2656344b33d17e08aea104b0c640a629c9b4b35d8fd3c3b59f0f1": "com/redhat/victims/cli/results/CommandResult.class",
+                "201d27f5e0b0d41bd345cf5615cfecc55e47ed45de1570e1cb68ef636c0058a70fb9c7d8f39e419ebac272fe440d3f7f55444adbb3dda8e8b861d0334f6e25ea": "com/redhat/victims/cli/Repl.class",
+                "41ff2f984f66660181bdbbeca3f15296785f7e2285a6851c456291e67df6a9e317fe047759b68801d56ded6cb39cabd6baccc9bcf735740b2fbf35d633f9cc4e": "com/redhat/victims/cli/commands/ExitCommand.class",
+                "56b58c1bd13dc58a34ba52240abe0a5053025e20ec0ec1ed1e441b6dafb99db3f39b7d837a7680950283097d11cb8efd51390b936ac35bf580e4415704914bcc": "com/redhat/victims/cli/commands/DumpCommand.class",
+                "572bcc456db6c03ebbfb7b29d1f77d888ac6302b3754ab10a00dcaf3819793760f6ca73dab78c6b408c58b58588a6df28698b1c29685a97c279628be8dec351a": "com/redhat/victims/cli/commands/SynchronizeCommand.class",
+                "607a043b5bbf365723e55d5d007e0c24ed951dec3f1b4bece5618f9b0d86af699d8105c5cf7cde8eb64ce18f12e4863daa57766e30b28ef879f1e5c6d288eba2": "com/redhat/victims/cli/commands/Command.class",
+                "679a1e4a39606e9a60a61bf2ac6ec389acea29d74f9048b693f961e3bb79354fc8796fff264db4c8c07cb64c2c37c724848c8e3735374b1dd657f25139aa425a": "com/redhat/victims/cli/commands/PomScannerCommand.class",
+                "6846675f42bd409cb29697be425f495c5d40923e008e96062d6b58b6dcd2922f672b521f4246de052618db1c7e803e7acbda7c724cc078e53001ddcee664e3fd": "com/redhat/victims/cli/commands/LastUpdateCommand.class",
+                "6d83f4e4d02cb2d8368d34acf1e14ca62fbfbb3db9e46178cd3b16b2de1c7b19bbc8424643cc6b748b4538ae76d5203950b2e1e624c0e166cb070f7fbef8fd7e": "com/redhat/victims/cli/Repl$CommandResults.class",
+                "86403e539656881cd9a203c047cec96dd6021a6bfdbd038edf3b47c5d7495f93caca852790b1bd3ea0cb664cca5ce4d04db5fb6b247e4ca35b6a99804f5ba0bf": "com/redhat/victims/cli/commands/ConfigureCommand.class",
+                "8d809c453ef3df10450827dace5ce68890810dba44fd7037d9bad4e4e0f9dc5b9217cea3afe0f7b32284dfa15c8064b0506b0f3fc3c4f8b79d30abdd0ab2628f": "com/redhat/victims/cli/results/ExitSuccess.class",
+                "97a0472d0c01d184e91f24ccc78540e52cf17c00c377fa5e7085fb8d912ba2766e61ffd5be6cb640cefa16ca6d120bfc40a338dc4c5c26b1a33637eedeb32570": "com/redhat/victims/cli/commands/Usage.class",
+                "9dd71fb90a6de2c94d2c9cc1e25229658e40e8823cd4cabec1940e3f8127426632c3578dfe304a6c4e94eef065b5412ef720b2b57ae035f989e2b6bf4f823ff0": "com/redhat/victims/cli/results/ExitFailure.class",
+                "9fcfeb39b279f0248fd7828863b214f83c263da98717b89e29d1ec5ad3583b4b48f3c9ca7325306c135fa57ab28c2c1e1f97591fdbb7cb223b355e2d23cae3f4": "com/redhat/victims/cli/CommandLineOptions.class",
+                "ac2abce43c15d10e3f7a6a3b1cf27fee9680b5e042a9bc62f4d3a05e9563e03b363c4e634fefcf640d4f60fb74ecb2b2c4a20f190eb48a8a00397ffd7440f4f7": "com/redhat/victims/cli/commands/MapCommand.class",
+                "b9ac1c964e465d076c79d71a9ce875957533a41a8c6dc88e969789cca5fc305e04d793245298905714484e5430bae18abeaadd07e6e0147a04c9614562f5c6ad": "com/redhat/victims/cli/Main.class",
+                "c1f35c2ede559958346a48c47f89800b78b1acf51a7b9818898452d550230445da6b33d95cb0d526fc3192af48a3fb4624b6daec0ef845d91ef30e7b586ae60c": "com/redhat/victims/cli/commands/ScanFileCommand.class",
+                "ce9ae4a6fad4e07f657b6c41cf5804e00b023325877c596d155b9efe11617031b8286b627a70e352b7826812c7af3c971adb69cbc0b2f255d7215d459dfb1b01": "com/redhat/victims/cli/results/ExitTerminate.class",
+                "cf3359dd26cca90ea60c6366f2fb7c122eb1eb5b956f5e445739d561465c94ffdc3607799cd7d65eb2c345a8cee8f43c41cf56d21213b19274a1bb8fc4293ff9": "com/redhat/victims/cli/commands/ScanDirCommand.class",
+                "cf77d47a672e3176668274628895302bef1686808951caa250cc977fa8db22d6e039432195aa2196eb52934a53d98935272d330fb2808c62b11f028f06e0691e": "com/redhat/victims/cli/commands/HelpCommand.class",
+                "e47536ea6e451da8910238217193e194ffaf86246e7d6a6a0339dee26c67eec92136ef6f30b5e26b143b1a9389518f176a3b1aca06104cc59a832f5ba40cb004": "com/redhat/victims/cli/results/ExitInvalid.class",
+                "e79029fa351b754b17258cecfdbd780540ae8084b7d51986e5e019f8a07458578dec8a34e6a1ce71413d8b5c90ebc6248a24fc61767f23fa0696c21b3b19c1f1": "com/redhat/victims/cli/commands/CompareCommand.class",
+                "eef7f7c59006223be92cbaae17c5e623032befa45a9942f91a8a1dc586d9bf3169f752f69cd461a7364c73e66fa255461ee9ca59b3f76f2bf2f10acbd99b0efa": "com/redhat/victims/cli/commands/ScanDirCommand$DirectoryScanner.class"
+            }
+        }
+    },
+    "meta": [
+        {
+            "filename": "META-INF/maven/com.redhat.victims/victims-client/pom.properties",
+            "properties": {
+                "artifactId": "victims-client",
+                "groupId": "com.redhat.victims",
+                "version": "1.0-SNAPSHOT"
+            }
+        },
+        {
+            "filename": "MANIFEST.MF",
+            "properties": {
+                "Manifest-Version": "1.0"
+            }
+        }
+    ],
+    "name": "victims-client-1.0-SNAPSHOT",
+    "status": "NEW",
+    "vendor": "UNKNOWN",
+    "version": "UNKNOWN"
+}

@@ -32,7 +32,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedHashTreeMap;
 import com.redhat.victims.fingerprint.Algorithms;
 import com.redhat.victims.fingerprint.Artifact;
 import com.redhat.victims.fingerprint.Fingerprint;
@@ -92,13 +91,27 @@ public class VictimsRecord {
 
 	/**
 	 * Test if the given {@link VictimsRecord} is equal to this instance. The
-	 * comparison is done solely by testing if all available file hashes match.
+	 * comparison is done first on combined hashes and then by testing if all
+	 * available file hashes match.
 	 * 
 	 * @param that
 	 * @return
 	 */
-	public boolean equals(VictimsRecord that) {
+	@Override
+	public boolean equals(Object rhs) {
+		if (!(rhs instanceof VictimsRecord)) {
+			return false;
+		}
+		VictimsRecord that = (VictimsRecord) rhs;
+
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
+			String thisHash = this.getHash(algorithm);
+			String thatHash = that.getHash(algorithm);
+			if (thisHash.equals(thatHash)
+					&& (thisHash.length() > 0 || thatHash.length() > 0)) {
+				// this matches so we can continue to next algorithm
+				continue;
+			}
 			// Copying sets as java.util.Set.equals do not seem to work
 			// otherwise
 			HashSet<String> thatHashes = new HashSet<String>(that.getHashes(
@@ -110,6 +123,57 @@ public class VictimsRecord {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Test if hashes for the given algorithm is present in this record.
+	 * 
+	 * @param algorithm
+	 * @return
+	 */
+	public boolean containsAlgorithm(Algorithms algorithm) {
+		return hashes.containsKey(normalizeKey(algorithm));
+	}
+
+	/**
+	 * Test if this instance of {@link VictimsRecord} contains all the file
+	 * hashes present in the given instance. Comparison is done on all available
+	 * algorithms until a subset match is found. If for an algorithm, either
+	 * this or that record is empty, check is skipped.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public boolean containsAll(Object o) {
+		if (!(o instanceof VictimsRecord)) {
+			return false;
+		}
+		VictimsRecord that = (VictimsRecord) o;
+
+		for (Algorithms algorithm : VictimsConfig.algorithms()) {
+			if (!(this.containsAlgorithm(algorithm) && that
+					.containsAlgorithm(algorithm))) {
+				// skip if both this and that do not have the current algorithm
+				continue;
+			}
+			HashSet<String> thatHashes = new HashSet<String>(that.getHashes(
+					algorithm).keySet());
+			HashSet<String> thisHashes = new HashSet<String>(this.getHashes(
+					algorithm).keySet());
+
+			if (thisHashes.isEmpty() || thatHashes.isEmpty()) {
+				// there is no real value in comparing empty sets
+				continue;
+			}
+
+			if (thisHashes.containsAll(thatHashes)) {
+				// we found a subset match
+				return true;
+			}
+		}
+
+		// we have gone through all algorithms without finding a subset match
+		return false;
 	}
 
 	/**
@@ -353,18 +417,20 @@ public class VictimsRecord {
 		static {
 			PERMITTED_VALUE_TYPES.add(Metadata.class);
 			PERMITTED_VALUE_TYPES.add(String.class);
-			PERMITTED_VALUE_TYPES.add(LinkedHashTreeMap.class);
+			PERMITTED_VALUE_TYPES.add(Map.class);
 		}
 
 		@Override
 		public Object put(String key, Object value) {
-			if (!PERMITTED_VALUE_TYPES.contains(value.getClass())) {
-				System.out.println(key.toString());
-				throw new IllegalArgumentException(String.format(
-						"Values of class type <%s> are not permitted in <%s>",
-						value.getClass().getName(), this.getClass().getName()));
+			for (Class<?> candidate : PERMITTED_VALUE_TYPES) {
+				if (candidate.isAssignableFrom(value.getClass())) {
+					return super.put(key, value);
+				}
 			}
-			return super.put(key, value);
+			System.out.println(key.toString());
+			throw new IllegalArgumentException(String.format(
+					"Values of class type <%s> are not permitted in <%s>",
+					value.getClass().getName(), this.getClass().getName()));
 		}
 	}
 }

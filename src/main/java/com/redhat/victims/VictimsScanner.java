@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 
@@ -109,11 +110,14 @@ public class VictimsScanner {
 	 */
 	private static void scanSource(String source, VictimsOutputStream vos)
 			throws IOException {
-		File f = new File(source);
+		File f = new File(FilenameUtils.normalize(source));
 		if (f.isDirectory()) {
 			scanDir(f, vos);
 		} else if (f.isFile()) {
 			scanFile(f, vos);
+		} else {
+			throw new IOException(String.format("Invalid source file: '%s'",
+					source));
 		}
 	}
 
@@ -201,12 +205,13 @@ public class VictimsScanner {
 	 */
 	private static class ArrayOutputStream extends VictimsOutputStream {
 
-		private ArrayList<VictimsRecord> records;
+		private final ArrayList<VictimsRecord> records;
 
 		public ArrayOutputStream(ArrayList<VictimsRecord> records) {
 			this.records = records;
 		}
 
+		@Override
 		public void write(VictimsRecord record) {
 			this.records.add(record);
 		}
@@ -219,12 +224,13 @@ public class VictimsScanner {
 	 */
 	private static class StringOutputStream extends VictimsOutputStream {
 
-		private OutputStream os;
+		private final OutputStream os;
 
 		public StringOutputStream(OutputStream os) {
 			this.os = os;
 		}
 
+		@Override
 		public void write(VictimsRecord record) throws IOException {
 			String line = record.toString();
 			line += "\n";

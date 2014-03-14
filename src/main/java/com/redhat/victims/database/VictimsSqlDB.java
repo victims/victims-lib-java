@@ -10,12 +10,12 @@ package com.redhat.victims.database;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -48,9 +48,9 @@ import com.redhat.victims.fingerprint.Algorithms;
 
 /**
  * This class implements {@link VictimsDBInterface} for SQL databases.
- * 
+ *
  * @author abn
- * 
+ *
  */
 public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	// The default file for storing the last sync'ed {@link Date}
@@ -60,7 +60,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 
 	/**
 	 * Create a new instance with the given parameters.
-	 * 
+	 *
 	 * @param driver
 	 *            The driver class to use.
 	 * @param dbUrl
@@ -70,7 +70,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
-	 * @throws VictimsException 
+	 * @throws VictimsException
 	 */
 	public VictimsSqlDB() throws VictimsException {
 		super();
@@ -81,7 +81,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	/**
 	 * Remove all records matching the records in the given {@link RecordStream}
 	 * if it exists.
-	 * 
+	 *
 	 * @param recordStream
 	 * @throws SQLException
 	 * @throws IOException
@@ -104,7 +104,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 * Update all records in the given {@link RecordStream}. This will remove
 	 * the record if it already exits and then add it. Otherwise, it just adds
 	 * it.
-	 * 
+	 *
 	 * @param recordStream
 	 * @throws SQLException
 	 * @throws IOException
@@ -154,7 +154,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	/**
 	 * Sets the last updated date. Once done, next call to lastUpdated() method
 	 * will return this date.
-	 * 
+	 *
 	 * @param date
 	 *            The date to set.
 	 * @throws IOException
@@ -239,7 +239,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 
 	/**
 	 * Returns CVEs that are ascociated with a given record id.
-	 * 
+	 *
 	 * @param recordId
 	 * @return
 	 * @throws SQLException
@@ -321,7 +321,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	/**
 	 * Fetch record id's from the local database that is composed entirely of
 	 * hashes in the set of hashes provided.
-	 * 
+	 *
 	 * @param hashes
 	 * @return A set record ids
 	 * @throws SQLException
@@ -360,7 +360,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 * Internal method implementing search for vulnerabilities checking if the
 	 * given {@link VictimsRecord}'s contents are a superset of a record in the
 	 * victims database.
-	 * 
+	 *
 	 * @param vr
 	 * @return
 	 * @throws SQLException
@@ -401,11 +401,37 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 		}
 	}
 
+	public int getRecordCount() throws VictimsException {
+
+		int count = 0;
+		Connection connection = null;
+		Statement stmt = null;
+		try {
+			connection = getConnection();
+			stmt = connection.createStatement();
+			ResultSet resultSet = stmt.executeQuery(Query.RECORD_COUNT);
+			if (resultSet.next()){
+				count = resultSet.getInt(1);
+			}
+			resultSet.close();
+
+		} catch (SQLException e){
+			throw new VictimsException("Could not query database size", e);
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (connection != null) connection.close();
+			} catch (Exception e){
+			}
+		}
+		return count;
+	}
+
 	/**
 	 * This class is used internally to store counts.
-	 * 
+	 *
 	 * @author abn
-	 * 
+	 *
 	 */
 	protected static class MutableInteger {
 		/*
