@@ -84,6 +84,7 @@ public class VictimsRecord {
 	 * 
 	 * @return A JSON string representation of this instance.
 	 */
+	@Override
 	public String toString() {
 		Gson gson = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
 		return gson.toJson(this);
@@ -105,13 +106,6 @@ public class VictimsRecord {
 		VictimsRecord that = (VictimsRecord) rhs;
 
 		for (Algorithms algorithm : VictimsConfig.algorithms()) {
-			String thisHash = this.getHash(algorithm);
-			String thatHash = that.getHash(algorithm);
-			if (thisHash.equals(thatHash)
-					&& (thisHash.length() > 0 || thatHash.length() > 0)) {
-				// this matches so we can continue to next algorithm
-				continue;
-			}
 			// Copying sets as java.util.Set.equals do not seem to work
 			// otherwise
 			HashSet<String> thatHashes = new HashSet<String>(that.getHashes(
@@ -122,7 +116,7 @@ public class VictimsRecord {
 				return false;
 			}
 		}
-		return true;
+		return this.hash.equals(that.hash);
 	}
 
 	/**
