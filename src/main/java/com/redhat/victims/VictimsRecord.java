@@ -167,7 +167,7 @@ public class VictimsRecord {
 		}
 
 		// we have gone through all algorithms without finding a subset match
-		return false;
+		return this.hash.equals(that.hash);
 	}
 
 	/**
