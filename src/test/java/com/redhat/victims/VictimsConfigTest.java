@@ -1,6 +1,6 @@
 package com.redhat.victims;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
@@ -33,11 +33,8 @@ public class VictimsConfigTest {
 		// test all invalids
 		System.setProperty(VictimsConfig.Key.ALGORITHMS, "MD1,DUMMY");
 		results = VictimsConfig.algorithms();
-		for (Algorithms alg : Algorithms.values()) {
-			assertTrue(
-					"All algorithms are invalid case did not return all defined algorithms.",
-					results.contains(VictimsConfig.getDefaultAlgorithm()));
-		}
+		Algorithms expected = VictimsConfig.getDefaultAlgorithm();
+		assertTrue("Unexpected algorithm(s) returned for invalid config.",
+				results.size() == 1 && results.contains(expected));
 	}
-
 }
