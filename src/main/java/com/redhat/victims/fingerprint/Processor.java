@@ -58,6 +58,8 @@ public class Processor {
 		// File Types
 		TYPE_MAP.put(".class", ClassFile.class);
 		TYPE_MAP.put(".jar", JarFile.class);
+		TYPE_MAP.put(".war", JarFile.class);
+		TYPE_MAP.put(".ear", JarFile.class);
 	}
 
 	/**
