@@ -73,7 +73,8 @@ public class VictimsRecord {
 	 * Create a {@link VictimsRecord} object when a json string is provided.
 	 * 
 	 * @param jsonStr
-	 * @return
+	 * @return {@link VictimsRecord} object loaded from given json string.
+	 *         Returns <code>null</code> if no record loaded.
 	 */
 	public static VictimsRecord fromJSON(String jsonStr) {
 		Gson gson = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
