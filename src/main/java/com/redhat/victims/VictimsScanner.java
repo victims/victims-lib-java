@@ -90,22 +90,14 @@ public class VictimsScanner {
 				// attempt to process as an archive
 				FileInputStream fis = new FileInputStream(file);
 				BufferedInputStream bis = new BufferedInputStream(fis);
-				ArchiveInputStream ais;
-				try {
-					// try to guess archive type
-					ais = new ArchiveStreamFactory()
+				ArchiveInputStream ais = new ArchiveStreamFactory()
 							.createArchiveInputStream(bis);
-				} catch (ArchiveException e) {
-					// try handling as a zip
-					ais = new ArchiveStreamFactory()
-							.createArchiveInputStream(ArchiveStreamFactory.ZIP, bis);
-				}
 				ArchiveEntry entry;
 				while ((entry = ais.getNextEntry()) != null) {
 					byte[] bytes = new byte[(int) entry.getSize()];
 					IOUtils.readFully(ais, bytes);
 					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-					if (Processor.isProcessable(file.getName())) {
+					if (Processor.isProcessable(entry.getName())) {
 						scanArtifact(Processor.process(bais, entry.getName()),
 								vos);
 					}
