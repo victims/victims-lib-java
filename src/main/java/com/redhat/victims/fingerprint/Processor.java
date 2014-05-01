@@ -74,11 +74,22 @@ public class Processor {
 	 * 
 	 * @param fileType
 	 *            The type of a file to check for. eg: ".class" ".jar"
-	 * @return true if the given file type is configured explicitely, else
+	 * @return true if the given file type is configured explicitly, else
 	 *         false.
 	 */
 	public static boolean isKnownType(String fileType) {
 		return TYPE_MAP.containsKey(fileType);
+	}
+
+	/**
+	 * 
+	 * @param filename
+	 *            The filename to test
+	 * @return true if the given filename's type is configured explicitly, else
+	 *         false.
+	 */
+	public static boolean isProcessable(String filename) {
+		return TYPE_MAP.containsKey(Processor.getFileType(filename));
 	}
 
 	/**
