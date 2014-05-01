@@ -21,7 +21,10 @@ package com.redhat.victims;
  * #L%
  */
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +32,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -73,8 +81,39 @@ public class VictimsScanner {
 			throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
-		Artifact artifact = Processor.process(path);
-		scanArtifact(artifact, vos);
+
+		if (Processor.isProcessable(file.getName())) {
+			// scan only if the file can be processed
+			scanArtifact(Processor.process(path), vos);
+		} else {
+			try {
+				// attempt to process as an archive
+				FileInputStream fis = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				ArchiveInputStream ais;
+				try {
+					// try to guess archive type
+					ais = new ArchiveStreamFactory()
+							.createArchiveInputStream(bis);
+				} catch (ArchiveException e) {
+					// try handling as a zip
+					ais = new ArchiveStreamFactory()
+							.createArchiveInputStream(ArchiveStreamFactory.ZIP, bis);
+				}
+				ArchiveEntry entry;
+				while ((entry = ais.getNextEntry()) != null) {
+					byte[] bytes = new byte[(int) entry.getSize()];
+					IOUtils.readFully(ais, bytes);
+					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+					if (Processor.isProcessable(file.getName())) {
+						scanArtifact(Processor.process(bais, entry.getName()),
+								vos);
+					}
+				}
+			} catch (ArchiveException e) {
+				// skip file
+			}
+		}
 	}
 
 	/**
