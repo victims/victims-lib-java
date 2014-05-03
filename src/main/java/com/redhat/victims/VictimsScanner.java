@@ -68,43 +68,55 @@ public class VictimsScanner {
 	}
 
 	/**
+	 * Attempts to unpack and scan contents of the provided compressed
+	 * {@link File}. The results are written to the provided
+	 * {@link VictimsOutputStream}. If the given {@link File} is not a an
+	 * archive, it is silently skipped.
+	 * 
+	 * @param file
+	 * @param vos
+	 * @throws IOException
+	 */
+	private static void scanArchive(File file, VictimsOutputStream vos)
+			throws IOException {
+		try {
+			// attempt to process as an archive
+			FileInputStream fis = new FileInputStream(file);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			ArchiveInputStream ais = new ArchiveStreamFactory()
+					.createArchiveInputStream(bis);
+
+			ArchiveEntry entry;
+			while ((entry = ais.getNextEntry()) != null) {
+				if (Processor.isProcessable(entry.getName())) {
+					byte[] bytes = new byte[(int) entry.getSize()];
+					IOUtils.readFully(ais, bytes);
+					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+					scanArtifact(Processor.process(bais, entry.getName()), vos);
+				}
+			}
+		} catch (ArchiveException e) {
+			// skip file not an archive
+		}
+	}
+
+	/**
 	 * 
 	 * Scans a provided {@link File} producing {@link VictimsRecord}. The string
 	 * values of the resulting records will be written to the specified output
 	 * stream.
 	 * 
 	 * @param file
-	 * @param os
+	 * @param vos
 	 * @throws IOException
 	 */
 	private static void scanFile(File file, VictimsOutputStream vos)
 			throws IOException {
-		File f = file;
-		String path = f.getAbsolutePath();
-
 		if (Processor.isProcessable(file.getName())) {
 			// scan only if the file can be processed
-			scanArtifact(Processor.process(path), vos);
+			scanArtifact(Processor.process(file.getAbsolutePath()), vos);
 		} else {
-			try {
-				// attempt to process as an archive
-				FileInputStream fis = new FileInputStream(file);
-				BufferedInputStream bis = new BufferedInputStream(fis);
-				ArchiveInputStream ais = new ArchiveStreamFactory()
-							.createArchiveInputStream(bis);
-				ArchiveEntry entry;
-				while ((entry = ais.getNextEntry()) != null) {
-					byte[] bytes = new byte[(int) entry.getSize()];
-					IOUtils.readFully(ais, bytes);
-					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-					if (Processor.isProcessable(entry.getName())) {
-						scanArtifact(Processor.process(bais, entry.getName()),
-								vos);
-					}
-				}
-			} catch (ArchiveException e) {
-				// skip file
-			}
+			scanArchive(file, vos);
 		}
 	}
 
