@@ -22,7 +22,6 @@ package com.redhat.victims;
  */
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -88,11 +87,11 @@ public class VictimsScanner {
 
 			ArchiveEntry entry;
 			while ((entry = ais.getNextEntry()) != null) {
-				if (Processor.isProcessable(entry.getName())) {
+				if (Processor.isProcessable(entry.getName())
+						&& entry.getSize() != ArchiveEntry.SIZE_UNKNOWN) {
 					byte[] bytes = new byte[(int) entry.getSize()];
 					IOUtils.readFully(ais, bytes);
-					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-					scanArtifact(Processor.process(bais, entry.getName()), vos);
+					scanArtifact(Processor.process(bytes, entry.getName()), vos);
 				}
 			}
 		} catch (ArchiveException e) {
