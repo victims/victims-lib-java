@@ -22,6 +22,7 @@ package com.redhat.victims.fingerprint;
  */
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,11 @@ public class JarFile extends AbstractFile {
 	 * Indicates if archive contents get processed. Default is true.
 	 */
 	public static final boolean RECURSIVE = true;
+
+	/**
+	 * Buffer for reading and processing entries
+	 */
+	private static final int BUFFER = 8192;
 
 	protected ArrayList<Object> contents;
 	protected ArrayList<Object> embedded;
@@ -208,9 +214,14 @@ public class JarFile extends AbstractFile {
 	protected Content getNextFile() throws IOException {
 		JarEntry entry;
 		if ((entry = jis.getNextJarEntry()) != null) {
-			byte[] bytes = new byte[(int) entry.getSize()];
-			IOUtils.readFully(jis, bytes);
-			Content file = new Content(entry.getName(), bytes);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			byte[] data = new byte[BUFFER];
+			int size;
+			while ((size = jis.read(data, 0, data.length)) != -1) {
+				bos.write(data, 0, size);
+			}
+			Content file = new Content(entry.getName(), bos.toByteArray());
+			bos.close();
 			return file;
 		}
 		return null;
