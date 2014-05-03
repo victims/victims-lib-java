@@ -17,14 +17,19 @@ import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
 
 import com.redhat.victims.fingerprint.Algorithms;
+import com.redhat.victims.mock.MockZipFile;
 
 public class VictimsScannerTest {
 
-	public void jsonValidateResult(VictimsRecord result, String jsonFile)
-			throws IOException {
+	public VictimsRecord jsonToRecord(String jsonFile) throws IOException {
 		String jstr = jsonFile == null ? null : FileUtils.readFileToString(
 				new File(jsonFile)).trim();
-		VictimsRecord expected = VictimsRecord.fromJSON(jstr);
+		return VictimsRecord.fromJSON(jstr);
+	}
+
+	public void jsonValidateResult(VictimsRecord result, String jsonFile)
+			throws IOException {
+		VictimsRecord expected = jsonToRecord(jsonFile);
 		assertEquals("Scanned record not equal to expected", expected, result);
 	}
 
@@ -118,4 +123,16 @@ public class VictimsScannerTest {
 		valueTest(Resources.JAR_FILE, Resources.JAR_SHA1, true);
 	}
 
+	@Test
+	public void testZipFileScanning() throws IOException {
+		MockZipFile zip = new MockZipFile();
+		zip.populateDefaults();
+		zip.close();
+
+		VictimsRecord expected = jsonToRecord(Resources.JAR_JSON);
+		assertTrue(
+				"Zip file scanning failed",
+				VictimsScanner.getRecords(zip.getAbsolutePath()).contains(
+						expected));
+	}
 }
