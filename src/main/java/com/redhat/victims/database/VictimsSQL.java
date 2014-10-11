@@ -308,7 +308,11 @@ public class VictimsSQL {
 
 		protected final static String FILEHASH_MATCHES_PER_RECORD = "SELECT record, count(filehash) FROM filehashes "
 				+ "WHERE filehash IN (?) " + "GROUP BY record";
-		protected final static String FILEHASH_COUNT_PER_RECORD = "SELECT record, count(*) FROM filehashes GROUP BY record";
+		protected final static String FILEHASH_EMBEDDED_MATCH = "SELECT m.record FROM"
+				+ "(SELECT record, count(*) AS count FROM TABLE(h varchar=?) t "
+				+ "INNER JOIN filehashes ON t.h = filehashes.filehash GROUP BY filehashes.record) as m, "
+				+ "(SELECT record, count(*) as count FROM filehashes GROUP BY record) as rc "
+				+ "WHERE rc.record = m.record AND rc.count = m.count;";
 		protected final static String FILEHASHES = "SELECT record, filehash FROM filehashes";
 		protected final static String PROPERTY_MATCH = "SELECT record, COUNT(record) as count "
 				+ "FROM TABLE (p varchar =  ?, v varchar = ? ) t "
