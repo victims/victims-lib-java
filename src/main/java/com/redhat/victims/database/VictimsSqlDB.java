@@ -282,32 +282,24 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 			HashSet<String> cves = new HashSet<String>();
 
 			int requiredMinCount = props.size();
-			HashMap<Integer, MutableInteger> matchedPropCount = new HashMap<Integer, MutableInteger>();
 
 			ResultSet rs;
 			PreparedStatement ps;
 			Connection connection = getConnection();
 			try {
-				for (String key : props.keySet()) {
-					String value = props.get(key);
-					ps = setObjects(connection, Query.PROPERTY_MATCH, key,
-							value);
-					rs = ps.executeQuery();
-					while (rs.next()) {
-						Integer id = rs.getInt("record");
-						if (!matchedPropCount.containsKey(id)) {
-							matchedPropCount.put(id, new MutableInteger());
-						} else {
-							MutableInteger count = matchedPropCount.get(id);
-							count.increment();
-							if (count.get() == requiredMinCount) {
-								cves.addAll(getVulnerabilities(id));
-							}
-						}
-					}
-					rs.close();
-					ps.close();
-				}
+                ps = setObjects(connection, Query.PROPERTY_MATCH,
+                		props.keySet().toArray(), 
+                		props.values().toArray());
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                	Integer id = rs.getInt("record");
+                	Integer count = rs.getInt("count");
+                	if (count == requiredMinCount) {
+                		cves.addAll(getVulnerabilities(id));
+                	}    	
+                }
+                rs.close();
+                ps.close();
 			} finally {
 				connection.close();
 			}
@@ -427,24 +419,5 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 		return count;
 	}
 
-	/**
-	 * This class is used internally to store counts.
-	 *
-	 * @author abn
-	 *
-	 */
-	protected static class MutableInteger {
-		/*
-		 * http://stackoverflow.com/questions/81346
-		 */
-		int value = 1; // note that we start at 1 since we're counting
-
-		public void increment() {
-			++value;
-		}
-
-		public int get() {
-			return value;
-		}
-	}
+	
 }
