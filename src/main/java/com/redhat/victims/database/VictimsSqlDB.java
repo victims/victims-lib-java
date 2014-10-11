@@ -319,32 +319,20 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 	 */
 	protected HashSet<Integer> getEmbeddedRecords(Set<String> hashes)
 			throws SQLException {
+		HashSet<Integer> results = new HashSet<Integer>();
 		Connection connection = getConnection();
-		Statement stmt = connection.createStatement();
-		HashSet<Integer> ignore = new HashSet<Integer>();
-		HashSet<Integer> candidates = new HashSet<Integer>();
+		PreparedStatement ps = setObjects(connection,
+				Query.FILEHASH_EMBEDDED_MATCH, (Object) hashes.toArray());
 		try {
-			ResultSet resultSet = stmt.executeQuery(Query.FILEHASHES);
-			Integer id;
-			String filehash;
+			ResultSet resultSet = ps.executeQuery();
 			while (resultSet.next()) {
-				id = resultSet.getInt("record");
-				if (!ignore.contains(id)) {
-					filehash = resultSet.getString("filehash");
-					if (hashes.contains(filehash)) {
-						candidates.add(id);
-					} else {
-						candidates.remove(id);
-						ignore.add(id);
-					}
-				}
+				results.add(resultSet.getInt("record"));
 			}
 			resultSet.close();
 		} finally {
-			stmt.close();
 			connection.close();
 		}
-		return candidates;
+		return results;
 	}
 
 	/**
