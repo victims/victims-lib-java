@@ -331,6 +331,21 @@ public class VictimsRecord {
 	}
 
 	/**
+	 * Returns a file to properties map for each available {@link MetaRecord}
+	 *
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, HashMap<String, String>> getMetaData() {
+		HashMap<String, HashMap<String, String>> result = new HashMap<String, HashMap<String, String>>();
+		for (MetaRecord mr : meta) {
+			result.put((String) mr.get(FieldName.META_FILENAME),
+					(HashMap<String, String>) mr.get(FieldName.META_PROPERTIES));
+		}
+		return result;
+	}
+
+	/**
 	 * Enumeration containing all possible values of the "status" field.
 	 * 
 	 * @author abn
