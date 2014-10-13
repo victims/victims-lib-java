@@ -287,19 +287,18 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 			PreparedStatement ps;
 			Connection connection = getConnection();
 			try {
-                ps = setObjects(connection, Query.PROPERTY_MATCH,
-                		props.keySet().toArray(), 
-                		props.values().toArray());
-                rs = ps.executeQuery();
-                while (rs.next()) {
-                	Integer id = rs.getInt("record");
-                	Integer count = rs.getInt("count");
-                	if (count == requiredMinCount) {
-                		cves.addAll(getVulnerabilities(id));
-                	}    	
-                }
-                rs.close();
-                ps.close();
+				ps = setObjects(connection, Query.PROPERTY_MATCH,
+						props.keySet().toArray(), props.values().toArray());
+				rs = ps.executeQuery();
+				while (rs.next()) {
+					Integer id = rs.getInt("record");
+					Integer count = rs.getInt("count");
+					if (count == requiredMinCount) {
+						cves.addAll(getVulnerabilities(id));
+					}
+				}
+				rs.close();
+				ps.close();
 			} finally {
 				connection.close();
 			}
@@ -418,6 +417,4 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
 		}
 		return count;
 	}
-
-	
 }
