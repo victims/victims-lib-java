@@ -207,17 +207,25 @@ public class JarFile extends AbstractFile {
 	 */
 	protected Content getNextFile() throws IOException {
 		JarEntry entry;
-		if ((entry = jis.getNextJarEntry()) != null) {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			byte[] data = new byte[BUFFER];
-			int size;
-			while ((size = jis.read(data, 0, data.length)) != -1) {
-				bos.write(data, 0, size);
-			}
-			Content file = new Content(entry.getName(), bos.toByteArray());
-			bos.close();
-			return file;
-		}
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            if ((entry = jis.getNextJarEntry()) != null) {
+
+                byte[] data = new byte[BUFFER];
+                int size;
+                while ((size = jis.read(data, 0, data.length)) != -1) {
+                    bos.write(data, 0, size);
+                }
+                Content file = new Content(entry.getName(), bos.toByteArray());
+                bos.close();
+                return file;
+            }
+        }
+        catch (IOException io) {
+            io.printStackTrace();
+            bos.close();
+            System.out.println(new String(bos.toByteArray()));
+        }
 		return null;
 	}
 
