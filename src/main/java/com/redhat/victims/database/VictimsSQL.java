@@ -98,7 +98,8 @@ public class VictimsSQL {
 			setUp();
 		} catch (Throwable t) {
 			throw new VictimsException(
-					"Could not create a VictimsSQL instance.", t);
+					"Could not create a VictimsSQL instance: " + t.getMessage(),
+                    t);
 		}
 	}
 
