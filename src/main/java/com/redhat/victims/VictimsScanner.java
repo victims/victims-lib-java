@@ -39,202 +39,202 @@ import com.redhat.victims.fingerprint.Processor;
 
 public class VictimsScanner {
 
-	/**
-	 * Scans a provided {@link Artifact} and writes the resulting
-	 * {@link VictimsRecord} to the provided {@link VictimsOutputStream}.
-	 * 
-	 * @param artifact
-	 * @param os
-	 * @throws IOException
-	 */
-	private static void scanArtifact(Artifact artifact, VictimsOutputStream vos)
-			throws IOException {
-		ArrayList<Artifact> embedded = artifact.embedded();
-		if (embedded != null) {
-			for (Artifact eartifact : artifact.embedded()) {
-				scanArtifact(eartifact, vos);
-			}
-		}
-		VictimsRecord record = new VictimsRecord(artifact);
-		vos.write(record);
-	}
+    /**
+     * Scans a provided {@link Artifact} and writes the resulting
+     * {@link VictimsRecord} to the provided {@link VictimsOutputStream}.
+     * 
+     * @param artifact
+     * @param os
+     * @throws IOException
+     */
+    private static void scanArtifact(Artifact artifact, VictimsOutputStream vos)
+            throws IOException {
+        ArrayList<Artifact> embedded = artifact.embedded();
+        if (embedded != null) {
+            for (Artifact eartifact : artifact.embedded()) {
+                scanArtifact(eartifact, vos);
+            }
+        }
+        VictimsRecord record = new VictimsRecord(artifact);
+        vos.write(record);
+    }
 
-	/**
-	 * 
-	 * Scans a provided {@link File} producing {@link VictimsRecord}. The string
-	 * values of the resulting records will be written to the specified output
-	 * stream.
-	 * 
-	 * @param file
-	 * @param os
-	 * @throws IOException
-	 */
-	private static void scanFile(File file, VictimsOutputStream vos)
-			throws IOException {
-		File f = file;
-		String path = f.getAbsolutePath();
-		Artifact artifact = Processor.process(path);
-		scanArtifact(artifact, vos);
-	}
+    /**
+     * 
+     * Scans a provided {@link File} producing {@link VictimsRecord}. The string
+     * values of the resulting records will be written to the specified output
+     * stream.
+     * 
+     * @param file
+     * @param os
+     * @throws IOException
+     */
+    private static void scanFile(File file, VictimsOutputStream vos)
+            throws IOException {
+        File f = file;
+        String path = f.getAbsolutePath();
+        Artifact artifact = Processor.process(path);
+        scanArtifact(artifact, vos);
+    }
 
-	/**
-	 * 
-	 * Iteratively finds all jar files in a given directory and scans them,
-	 * producing {@link VictimsRecord}. The string values of the resulting
-	 * records will be written to the specified output stream.
-	 * 
-	 * @param dir
-	 * @param os
-	 * @throws IOException
-	 */
-	private static void scanDir(File dir, VictimsOutputStream vos)
-			throws IOException {
-		Collection<File> files = FileUtils.listFiles(dir, new RegexFileFilter(
-				"^(.*?)\\.jar"), DirectoryFileFilter.DIRECTORY);
-		Iterator<File> fi = files.iterator();
-		while (fi.hasNext()) {
-			scanFile(fi.next(), vos);
-		}
-	}
+    /**
+     * 
+     * Iteratively finds all jar files in a given directory and scans them,
+     * producing {@link VictimsRecord}. The string values of the resulting
+     * records will be written to the specified output stream.
+     * 
+     * @param dir
+     * @param os
+     * @throws IOException
+     */
+    private static void scanDir(File dir, VictimsOutputStream vos)
+            throws IOException {
+        Collection<File> files = FileUtils.listFiles(dir, new RegexFileFilter(
+                "^(.*?)\\.jar"), DirectoryFileFilter.DIRECTORY);
+        Iterator<File> fi = files.iterator();
+        while (fi.hasNext()) {
+            scanFile(fi.next(), vos);
+        }
+    }
 
-	/**
-	 * 
-	 * Iteratively finds all jar files if source is a directory and scans them
-	 * or if a file , scan it, producing {@link VictimsRecord}. This is then
-	 * written to the provided {@link VictimsOutputStream}. Embedded jars are a
-	 * record on their own.
-	 * 
-	 * @param source
-	 * @param os
-	 * @throws IOException
-	 */
-	private static void scanSource(String source, VictimsOutputStream vos)
-			throws IOException {
-		File f = new File(FilenameUtils.normalize(source));
-		if (f.isDirectory()) {
-			scanDir(f, vos);
-		} else if (f.isFile()) {
-			scanFile(f, vos);
-		} else {
-			throw new IOException(String.format("Invalid source file: '%s'",
-					source));
-		}
-	}
+    /**
+     * 
+     * Iteratively finds all jar files if source is a directory and scans them
+     * or if a file , scan it, producing {@link VictimsRecord}. This is then
+     * written to the provided {@link VictimsOutputStream}. Embedded jars are a
+     * record on their own.
+     * 
+     * @param source
+     * @param os
+     * @throws IOException
+     */
+    private static void scanSource(String source, VictimsOutputStream vos)
+            throws IOException {
+        File f = new File(FilenameUtils.normalize(source));
+        if (f.isDirectory()) {
+            scanDir(f, vos);
+        } else if (f.isFile()) {
+            scanFile(f, vos);
+        } else {
+            throw new IOException(String.format("Invalid source file: '%s'",
+                    source));
+        }
+    }
 
-	/**
-	 * Iteratively finds all jar files if source is a directory and scans them
-	 * or if a file , scan it. The string values of the resulting records will
-	 * be written to the specified output stream. Embedded jars are a record on
-	 * their own.
-	 * 
-	 * @param source
-	 * @param os
-	 * @throws IOException
-	 */
-	public static void scan(String source, OutputStream os) throws IOException {
-		scanSource(source, new StringOutputStream(os));
-	}
+    /**
+     * Iteratively finds all jar files if source is a directory and scans them
+     * or if a file , scan it. The string values of the resulting records will
+     * be written to the specified output stream. Embedded jars are a record on
+     * their own.
+     * 
+     * @param source
+     * @param os
+     * @throws IOException
+     */
+    public static void scan(String source, OutputStream os) throws IOException {
+        scanSource(source, new StringOutputStream(os));
+    }
 
-	/**
-	 * Iteratively finds all jar files if source is a directory and scans them
-	 * or if a file , scan it. The {@link VictimsRecord}s produced are added
-	 * into the provided {@link ArrayList}.Embedded jars are a record on their
-	 * own.
-	 * 
-	 * @param source
-	 * @param results
-	 * @throws IOException
-	 */
-	public static void scan(String source, ArrayList<VictimsRecord> results)
-			throws IOException {
-		scanSource(source, new ArrayOutputStream(results));
-	}
+    /**
+     * Iteratively finds all jar files if source is a directory and scans them
+     * or if a file , scan it. The {@link VictimsRecord}s produced are added
+     * into the provided {@link ArrayList}.Embedded jars are a record on their
+     * own.
+     * 
+     * @param source
+     * @param results
+     * @throws IOException
+     */
+    public static void scan(String source, ArrayList<VictimsRecord> results)
+            throws IOException {
+        scanSource(source, new ArrayOutputStream(results));
+    }
 
-	/**
-	 * Iteratively finds all jar files if source is a directory and scans them
-	 * or if a file , scan it.
-	 * 
-	 * @param source
-	 * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
-	 *         source. Embedded jars are a record on their own.
-	 * @throws IOException
-	 */
-	public static ArrayList<VictimsRecord> getRecords(String source)
-			throws IOException {
-		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
-		scan(source, records);
-		return records;
+    /**
+     * Iteratively finds all jar files if source is a directory and scans them
+     * or if a file , scan it.
+     * 
+     * @param source
+     * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
+     *         source. Embedded jars are a record on their own.
+     * @throws IOException
+     */
+    public static ArrayList<VictimsRecord> getRecords(String source)
+            throws IOException {
+        ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
+        scan(source, records);
+        return records;
 
-	}
+    }
 
-	/**
-	 * Scan a file from a given {@link InputStream}.
-	 * 
-	 * @param in
-	 * @param filename
-	 * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
-	 *         source. Embedded jars are a record on their own.
-	 * @throws IOException
-	 */
-	public static ArrayList<VictimsRecord> getRecords(InputStream in,
-			String filename) throws IOException {
-		ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
-		Artifact artifact = Processor.process(in, filename);
-		scanArtifact(artifact, new ArrayOutputStream(records));
-		return records;
+    /**
+     * Scan a file from a given {@link InputStream}.
+     * 
+     * @param in
+     * @param filename
+     * @return An {@link ArrayList} of {@link VictimsRecord}s derrived from the
+     *         source. Embedded jars are a record on their own.
+     * @throws IOException
+     */
+    public static ArrayList<VictimsRecord> getRecords(InputStream in,
+            String filename) throws IOException {
+        ArrayList<VictimsRecord> records = new ArrayList<VictimsRecord>();
+        Artifact artifact = Processor.process(in, filename);
+        scanArtifact(artifact, new ArrayOutputStream(records));
+        return records;
 
-	}
+    }
 
-	/**
-	 * Inner class to abstract away {@link OutputStream} and {@link ArrayList}
-	 * for the purposes of the scanner.
-	 * 
-	 * @author abn
-	 * 
-	 */
-	private abstract static class VictimsOutputStream {
-		public abstract void write(VictimsRecord record) throws IOException;
-	}
+    /**
+     * Inner class to abstract away {@link OutputStream} and {@link ArrayList}
+     * for the purposes of the scanner.
+     * 
+     * @author abn
+     * 
+     */
+    private abstract static class VictimsOutputStream {
+        public abstract void write(VictimsRecord record) throws IOException;
+    }
 
-	/**
-	 * Extends {@link VictimsOutputStream} to handle {@link ArrayList} of
-	 * {@link VictimsRecord}.
-	 * 
-	 * @author abn
-	 * 
-	 */
-	private static class ArrayOutputStream extends VictimsOutputStream {
+    /**
+     * Extends {@link VictimsOutputStream} to handle {@link ArrayList} of
+     * {@link VictimsRecord}.
+     * 
+     * @author abn
+     * 
+     */
+    private static class ArrayOutputStream extends VictimsOutputStream {
 
-		private final ArrayList<VictimsRecord> records;
+        private final ArrayList<VictimsRecord> records;
 
-		public ArrayOutputStream(ArrayList<VictimsRecord> records) {
-			this.records = records;
-		}
+        public ArrayOutputStream(ArrayList<VictimsRecord> records) {
+            this.records = records;
+        }
 
-		@Override
-		public void write(VictimsRecord record) {
-			this.records.add(record);
-		}
-	}
+        @Override
+        public void write(VictimsRecord record) {
+            this.records.add(record);
+        }
+    }
 
-	/**
-	 * Extends {@link VictimsOutputStream} to handle {@link OutputStream}s.
-	 * 
-	 * @author abn
-	 */
-	private static class StringOutputStream extends VictimsOutputStream {
+    /**
+     * Extends {@link VictimsOutputStream} to handle {@link OutputStream}s.
+     * 
+     * @author abn
+     */
+    private static class StringOutputStream extends VictimsOutputStream {
 
-		private final OutputStream os;
+        private final OutputStream os;
 
-		public StringOutputStream(OutputStream os) {
-			this.os = os;
-		}
+        public StringOutputStream(OutputStream os) {
+            this.os = os;
+        }
 
-		@Override
-		public void write(VictimsRecord record) throws IOException {
-			String line = record.toString();
-			line += "\n";
-			os.write(line.getBytes(VictimsConfig.charset()));
-		}
-	}
+        @Override
+        public void write(VictimsRecord record) throws IOException {
+            String line = record.toString();
+            line += "\n";
+            os.write(line.getBytes(VictimsConfig.charset()));
+        }
+    }
 }

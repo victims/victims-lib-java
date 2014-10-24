@@ -29,39 +29,39 @@ import org.apache.commons.io.FileUtils;
 import com.redhat.victims.VictimsConfig;
 
 public class MockEnvironment {
-	private static String CACHE_PREFIX = "victims.test.cache";
-	private static File TEMP_CACHE = null;
+    private static String CACHE_PREFIX = "victims.test.cache";
+    private static File TEMP_CACHE = null;
 
-	public static void setUp(File updateResponse, File removeResponse)
-			throws IOException {
-		initCache();
-		MockService.start(updateResponse, removeResponse);
-		System.setProperty(VictimsConfig.Key.DB_PURGE, "true");
-		System.setProperty(VictimsConfig.Key.URI, MockService.uri());
-		System.setProperty(VictimsConfig.Key.HOME,
-				TEMP_CACHE.getAbsolutePath());
-	}
+    public static void setUp(File updateResponse, File removeResponse)
+            throws IOException {
+        initCache();
+        MockService.start(updateResponse, removeResponse);
+        System.setProperty(VictimsConfig.Key.DB_PURGE, "true");
+        System.setProperty(VictimsConfig.Key.URI, MockService.uri());
+        System.setProperty(VictimsConfig.Key.HOME,
+                TEMP_CACHE.getAbsolutePath());
+    }
 
-	public static void tearDown() {
-		MockService.stop();
-		System.clearProperty(VictimsConfig.Key.DB_PURGE);
-		System.clearProperty(VictimsConfig.Key.URI);
-		System.clearProperty(VictimsConfig.Key.HOME);
-		deleteCache();
-	}
+    public static void tearDown() {
+        MockService.stop();
+        System.clearProperty(VictimsConfig.Key.DB_PURGE);
+        System.clearProperty(VictimsConfig.Key.URI);
+        System.clearProperty(VictimsConfig.Key.HOME);
+        deleteCache();
+    }
 
-	public static void initCache() throws IOException {
-		TEMP_CACHE = File.createTempFile(CACHE_PREFIX, "");
-		FileUtils.forceDelete(TEMP_CACHE);
-	}
+    public static void initCache() throws IOException {
+        TEMP_CACHE = File.createTempFile(CACHE_PREFIX, "");
+        FileUtils.forceDelete(TEMP_CACHE);
+    }
 
-	public static void deleteCache() {
-		if (TEMP_CACHE.exists()) {
-			try {
-				FileUtils.forceDeleteOnExit(TEMP_CACHE);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    public static void deleteCache() {
+        if (TEMP_CACHE.exists()) {
+            try {
+                FileUtils.forceDeleteOnExit(TEMP_CACHE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

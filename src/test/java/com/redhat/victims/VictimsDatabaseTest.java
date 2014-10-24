@@ -21,101 +21,101 @@ import com.redhat.victims.mock.MockEnvironment;
 
 public class VictimsDatabaseTest {
 
-	private static VictimsDBInterface vdb;
+    private static VictimsDBInterface vdb;
 
-	@BeforeClass
-	public static void setUp() throws IOException, VictimsException {
-		File updateResponse = new File(Resources.TEST_RESPONSE);
-		MockEnvironment.setUp(updateResponse, null);
-		sync();
-	}
+    @BeforeClass
+    public static void setUp() throws IOException, VictimsException {
+        File updateResponse = new File(Resources.TEST_RESPONSE);
+        MockEnvironment.setUp(updateResponse, null);
+        sync();
+    }
 
-	@AfterClass
-	public static void tearDown() {
-		MockEnvironment.tearDown();
-	}
+    @AfterClass
+    public static void tearDown() {
+        MockEnvironment.tearDown();
+    }
 
-	public static void sync() throws VictimsException {
-		vdb = VictimsDB.db();
-		vdb.synchronize();
-	}
+    public static void sync() throws VictimsException {
+        vdb = VictimsDB.db();
+        vdb.synchronize();
+    }
 
-	@Test
-	public void testSynchronize() throws VictimsException, IOException {
-		String sha512 = FileUtils.readFileToString(
-				new File(Resources.TEST_SHA512)).trim();
-		String cve = FileUtils.readFileToString(new File(Resources.TEST_CVE))
-				.trim();
-		assertTrue("Synchronized DB does not contain expected hash.", vdb
-				.getVulnerabilities(sha512).contains(cve));
-	}
+    @Test
+    public void testSynchronize() throws VictimsException, IOException {
+        String sha512 = FileUtils.readFileToString(
+                new File(Resources.TEST_SHA512)).trim();
+        String cve = FileUtils.readFileToString(new File(Resources.TEST_CVE))
+                .trim();
+        assertTrue("Synchronized DB does not contain expected hash.", vdb
+                .getVulnerabilities(sha512).contains(cve));
+    }
 
-	private HashSet<String> getVulnerabilities(VictimsDBInterface vdb,
-			VictimsRecord vr) throws VictimsException {
-		return vdb.getVulnerabilities(vr);
-	}
+    private HashSet<String> getVulnerabilities(VictimsDBInterface vdb,
+            VictimsRecord vr) throws VictimsException {
+        return vdb.getVulnerabilities(vr);
+    }
 
-	private void testVulnerabilities(VictimsDBInterface vdb, boolean embedded)
-			throws IOException, VictimsException {
-		FileInputStream fin = new FileInputStream(Resources.TEST_RESPONSE);
-		RecordStream rs = new RecordStream(fin);
-		VictimsRecord vr;
-		while (rs.hasNext()) {
-			vr = rs.getNext();
-			if (vr.getHashes(Algorithms.SHA512).size() > 0) {
-				HashSet<String> cves = getVulnerabilities(vdb, vr);
-				vr.hash = "0";
-				if (embedded) {
-					// since we are testing for embedded, inject some new
-					// filehashes to simulate a superset
-					vr.getHashes(Algorithms.SHA512).put("1", "1");
-					vr.getHashes(Algorithms.SHA512).put("2", "2");
-				}
-				HashSet<String> result = getVulnerabilities(vdb, vr);
-				assertEquals("Unexpected number of CVEs", cves.size(),
-						result.size());
-				for (String cve : cves) {
-					assertTrue(String.format(
-							"%s was expected, but was not found in result.",
-							cve), result.contains(cve));
-				}
-				break;
-			}
-		}
-	}
+    private void testVulnerabilities(VictimsDBInterface vdb, boolean embedded)
+            throws IOException, VictimsException {
+        FileInputStream fin = new FileInputStream(Resources.TEST_RESPONSE);
+        RecordStream rs = new RecordStream(fin);
+        VictimsRecord vr;
+        while (rs.hasNext()) {
+            vr = rs.getNext();
+            if (vr.getHashes(Algorithms.SHA512).size() > 0) {
+                HashSet<String> cves = getVulnerabilities(vdb, vr);
+                vr.hash = "0";
+                if (embedded) {
+                    // since we are testing for embedded, inject some new
+                    // filehashes to simulate a superset
+                    vr.getHashes(Algorithms.SHA512).put("1", "1");
+                    vr.getHashes(Algorithms.SHA512).put("2", "2");
+                }
+                HashSet<String> result = getVulnerabilities(vdb, vr);
+                assertEquals("Unexpected number of CVEs", cves.size(),
+                        result.size());
+                for (String cve : cves) {
+                    assertTrue(String.format(
+                            "%s was expected, but was not found in result.",
+                            cve), result.contains(cve));
+                }
+                break;
+            }
+        }
+    }
 
-	@Test
-	public void testVulnerabilities() throws IOException, VictimsException {
-		testVulnerabilities(vdb, false);
-	}
+    @Test
+    public void testVulnerabilities() throws IOException, VictimsException {
+        testVulnerabilities(vdb, false);
+    }
 
-	@Test
-	public void testEmbeddedVulnerabilities() throws IOException,
-			VictimsException {
-		testVulnerabilities(vdb, true);
-	}
+    @Test
+    public void testEmbeddedVulnerabilities() throws IOException,
+            VictimsException {
+        testVulnerabilities(vdb, true);
+    }
 
-	@Test
-	public void testResync() throws VictimsException {
-		VictimsDBInterface vdb = VictimsDB.db();
-		vdb.synchronize();
-	}
+    @Test
+    public void testResync() throws VictimsException {
+        VictimsDBInterface vdb = VictimsDB.db();
+        vdb.synchronize();
+    }
 
-	@Test(expected = VictimsException.class)
-	public void testDerby() throws IOException, VictimsException {
-		String old = System.getProperty(VictimsConfig.Key.DB_DRIVER);
-		try {
-			System.setProperty(VictimsConfig.Key.DB_DRIVER,
-					"org.apache.derby.jdbc.EmbeddedDriver");
-			VictimsDBInterface vdb = VictimsDB.db();
-			vdb.synchronize();
-		} finally {
-			if (old != null) {
-				System.setProperty(VictimsConfig.Key.DB_DRIVER, old);
-			} else {
-				System.clearProperty(VictimsConfig.Key.DB_DRIVER);
-			}
-		}
+    @Test(expected = VictimsException.class)
+    public void testDerby() throws IOException, VictimsException {
+        String old = System.getProperty(VictimsConfig.Key.DB_DRIVER);
+        try {
+            System.setProperty(VictimsConfig.Key.DB_DRIVER,
+                    "org.apache.derby.jdbc.EmbeddedDriver");
+            VictimsDBInterface vdb = VictimsDB.db();
+            vdb.synchronize();
+        } finally {
+            if (old != null) {
+                System.setProperty(VictimsConfig.Key.DB_DRIVER, old);
+            } else {
+                System.clearProperty(VictimsConfig.Key.DB_DRIVER);
+            }
+        }
 
-	}
+    }
 }
