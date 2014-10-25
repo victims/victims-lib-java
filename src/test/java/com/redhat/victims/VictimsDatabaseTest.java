@@ -55,7 +55,7 @@ public class VictimsDatabaseTest {
         return vdb.getVulnerabilities(vr);
     }
 
-    private void testVulnerabilities(VictimsDBInterface vdb, boolean embedded)
+    private void testVulnerabilities(VictimsDBInterface vdb, boolean embedded, boolean meta)
             throws IOException, VictimsException {
         FileInputStream fin = new FileInputStream(Resources.TEST_RESPONSE);
         RecordStream rs = new RecordStream(fin);
@@ -64,14 +64,20 @@ public class VictimsDatabaseTest {
             vr = rs.getNext();
             if (vr.getHashes(Algorithms.SHA512).size() > 0) {
                 HashSet<String> cves = getVulnerabilities(vdb, vr);
-                vr.hash = "0";
-                if (embedded) {
-                    // since we are testing for embedded, inject some new
-                    // filehashes to simulate a superset
-                    vr.getHashes(Algorithms.SHA512).put("1", "1");
-                    vr.getHashes(Algorithms.SHA512).put("2", "2");
+                HashSet<String> result;
+
+                if (meta) {
+                    result = vdb.getVulnerabilities(vr.getFlattenedMetaData());
+                } else {
+                    vr.hash = "0";
+                    if (embedded) {
+                        // since we are testing for embedded, inject some new
+                        // filehashes to simulate a superset
+                        vr.getHashes(Algorithms.SHA512).put("1", "1");
+                        vr.getHashes(Algorithms.SHA512).put("2", "2");
+                    }
+                    result = getVulnerabilities(vdb, vr);
                 }
-                HashSet<String> result = getVulnerabilities(vdb, vr);
                 assertEquals("Unexpected number of CVEs", cves.size(),
                         result.size());
                 for (String cve : cves) {
@@ -86,13 +92,18 @@ public class VictimsDatabaseTest {
 
     @Test
     public void testVulnerabilities() throws IOException, VictimsException {
-        testVulnerabilities(vdb, false);
+        testVulnerabilities(vdb, false, false);
     }
 
     @Test
     public void testEmbeddedVulnerabilities() throws IOException,
             VictimsException {
-        testVulnerabilities(vdb, true);
+        testVulnerabilities(vdb, true, false);
+    }
+
+    @Test
+    public void testPropertyVulnerabilities() throws IOException, VictimsException {
+        testVulnerabilities(vdb, false, true);
     }
 
     @Test
