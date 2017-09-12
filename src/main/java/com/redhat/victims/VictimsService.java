@@ -101,10 +101,11 @@ public class VictimsService {
      */
     protected RecordStream fetch(Date since, String type) throws IOException {
         SimpleDateFormat fmt = new SimpleDateFormat(VictimsRecord.DATE_FORMAT);
-        String spec = FileUtils.getFile(serviceEntry, type, fmt.format(since))
+        String spec = FileUtils.getFile(serviceEntry, type, fmt.format(since), "/")
                 .toString();
         spec = FilenameUtils.normalize(spec, true);
         URL merged = new URL(new URL(baseURI), spec);
+        System.out.println("merged: " + merged);
         return new RecordStream(merged.toString());
     }
 
