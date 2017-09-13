@@ -94,7 +94,7 @@ public class VictimsConfig {
     /**
      * Get the webservice base URI.
      * 
-     * @return
+     * @return Returns the service URI value
      */
     public static String uri() {
         return getPropertyValue(Key.URI);
@@ -103,7 +103,7 @@ public class VictimsConfig {
     /**
      * Get the webservice entry point.
      * 
-     * @return
+     * @return Returns the service entry path value
      */
     public static String entry() {
         return getPropertyValue(Key.ENTRY);
@@ -112,7 +112,7 @@ public class VictimsConfig {
     /**
      * Get a complete webservice uri by merging base and entry point.
      * 
-     * @return
+     * @return Validated Service URI
      * @throws VictimsException
      */
     public static String serviceURI() throws VictimsException {
@@ -130,8 +130,8 @@ public class VictimsConfig {
      * Get the configured cache directory. If the directory does not exist, it
      * will be created.
      * 
-     * @return
-     * @throws VictimsException
+     * @return Validated Home Directory
+     * @throws VictimsException if directory cannot be created
      */
     public static File home() throws VictimsException {
         File directory = new File(getPropertyValue(Key.HOME));
@@ -147,11 +147,11 @@ public class VictimsConfig {
     }
 
     /**
-     * Returns a list of valid algorithms to be used when fingerprinting. If not
+     * 
+     * 
+     * @return Returns a list of valid algorithms to be used when fingerprinting. If not
      * specified, or if all values are illegal, all available algorithms are
      * used.
-     * 
-     * @return
      */
     public static ArrayList<Algorithms> algorithms() {
         ArrayList<Algorithms> algorithms = new ArrayList<Algorithms>();
@@ -174,7 +174,7 @@ public class VictimsConfig {
     /**
      * Get the db driver class string in use.
      * 
-     * @return
+     * @return DB Driver class 
      */
     public static String dbDriver() {
         return getPropertyValue(Key.DB_DRIVER);
@@ -183,7 +183,7 @@ public class VictimsConfig {
     /**
      * Get the db connection URL.
      * 
-     * @return
+     * @return Validated DB ConnectionURL
      */
     public static String dbUrl() {
         String dbUrl = getPropertyValue(Key.DB_URL);
@@ -199,7 +199,7 @@ public class VictimsConfig {
     /**
      * Get the database user configured.
      * 
-     * @return
+     * @return Database user value
      */
     public static String dbUser() {
         return getPropertyValue(Key.DB_USER);
@@ -208,7 +208,7 @@ public class VictimsConfig {
     /**
      * Get the database password configured.
      * 
-     * @return
+     * @return Database password value
      */
     public static String dbPass() {
         return getPropertyValue(Key.DB_PASS);
@@ -217,7 +217,7 @@ public class VictimsConfig {
     /**
      * Is a force database update required.
      * 
-     * @return
+     * @return Database Purge value
      */
     public static boolean forcedUpdate() {
         return Boolean.getBoolean(Key.DB_PURGE);
@@ -226,7 +226,7 @@ public class VictimsConfig {
     /**
      * A client option to check if it's cache has to be purged.
      * 
-     * @return
+     * @return Cache purge value
      */
     public static boolean purgeCache() {
         return Boolean.getBoolean(Key.PURGE_CACHE);

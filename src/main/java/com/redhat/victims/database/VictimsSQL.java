@@ -49,7 +49,7 @@ public class VictimsSQL {
     private String dbPass = null;
 
     /**
-     * Get a new connection from the {@link VictimsSqlManager} pool.
+     * Get a new connection from the {@link DriverManager} pool.
      *
      * @return
      * @throws SQLException

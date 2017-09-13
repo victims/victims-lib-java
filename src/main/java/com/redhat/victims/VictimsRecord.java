@@ -95,7 +95,7 @@ public class VictimsRecord {
      * comparison is done first on combined hashes and then by testing if all
      * available file hashes match.
      * 
-     * @param that
+     * @param rhs
      * @return
      */
     @Override
@@ -135,7 +135,7 @@ public class VictimsRecord {
      * algorithms until a subset match is found. If for an algorithm, either
      * this or that record is empty, check is skipped.
      * 
-     * @param that
+     * @param o
      * @return
      */
     public boolean containsAll(Object o) {
