@@ -59,17 +59,7 @@ public class VictimsSqlDB extends VictimsSQL implements VictimsDBInterface {
     protected VictimsResultCache cache;
 
     /**
-     * Create a new instance with the given parameters.
-     *
-     * @param driver
-     *            The driver class to use.
-     * @param dbUrl
-     *            The connection string without username and password.
-     * @param create
-     *            Are we creating this database? If so initialize.
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws SQLException
+     * Create a new instance 
      * @throws VictimsException
      */
     public VictimsSqlDB() throws VictimsException {
