@@ -105,7 +105,6 @@ public class VictimsService {
                 .toString();
         spec = FilenameUtils.normalize(spec, true);
         URL merged = new URL(new URL(baseURI), spec);
-        System.out.println("merged: " + merged);
         return new RecordStream(merged.toString());
     }
 
