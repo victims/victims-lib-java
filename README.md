@@ -2,7 +2,7 @@ victims-lib-java [![Build Status](https://travis-ci.org/victims/victims-lib-java
 ================
 A java library providing fingerprinting and service interaction for the Victims Project. 
 
-Current version is ```1.3.2```.
+Current version is ```1.3.3```.
 
 ### GPG Keys
 Download: [pgp.mit.edu](http://pgp.mit.edu:11371/pks/lookup?search=0xEEE72232&op=index)

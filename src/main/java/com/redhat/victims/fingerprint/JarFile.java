@@ -222,7 +222,7 @@ public class JarFile extends AbstractFile {
     }
 
     /**
-     * Content -- Inner class for use by {@link ArchiveFile}. This is used to
+     * Content -- Inner class for use by {@link JarFile}. This is used to
      * group name of file extracted in memory and the corresponding bytes that
      * were read.
      * 
